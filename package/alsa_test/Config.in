@@ -1,0 +1,4 @@
+config BR2_PACKAGE_ALSA_TEST
+	bool "ALSA testing"
+	help
+	  user application to test alsa framework

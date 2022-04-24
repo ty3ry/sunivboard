@@ -1,0 +1,28 @@
+From f6d55c8de568701b6c4acbc8419e6207b568de23 Mon Sep 17 00:00:00 2001
+From: George Hilliard <thirtythreeforty@gmail.com>
+Date: Sun, 16 Jun 2019 14:07:29 -0500
+Subject: [PATCH 13/19] sunxi: Don't provide enable_cache() on suniv
+
+The arm926 code provides this function.  Disable it here.
+
+Signed-off-by: George Hilliard <thirtythreeforty@gmail.com>
+---
+ arch/arm/mach-sunxi/board.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-sunxi/board.c b/arch/arm/mach-sunxi/board.c
+index b44dd5d8dc..fe258963d7 100644
+--- a/arch/arm/mach-sunxi/board.c
++++ b/arch/arm/mach-sunxi/board.c
+@@ -326,7 +326,7 @@ void reset_cpu(ulong addr)
+ #endif
+ }
+ 
+-#if !defined(CONFIG_SYS_DCACHE_OFF) && !defined(CONFIG_ARM64)
++#if !defined(CONFIG_SYS_DCACHE_OFF) && !defined(CONFIG_ARM64) && !defined(CONFIG_CPU_ARM926EJS)
+ void enable_caches(void)
+ {
+ 	/* Enable D-cache. I-cache is already enabled in start.S */
+-- 
+2.17.1
+

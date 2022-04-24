@@ -1,0 +1,3 @@
+[submodule "buildroot"]
+	path = buildroot
+	url = https://github.com/ty3ry/buildroot.git

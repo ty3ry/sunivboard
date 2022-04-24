@@ -1,0 +1,41 @@
+From ea254cc59e491952e23725752e30720498377ad4 Mon Sep 17 00:00:00 2001
+From: George Hilliard <thirtythreeforty@gmail.com>
+Date: Mon, 17 Jun 2019 21:44:45 -0500
+Subject: [PATCH 15/19] sunxi_gpio: Add support for suniv-f1c100s
+
+The f1c100s has a controller pretty similar to that of most sunxi parts,
+but there are only 6 banks.  Add a new compatible entry for this
+peripheral.
+
+Signed-off-by: George Hilliard <thirtythreeforty@gmail.com>
+---
+ drivers/gpio/sunxi_gpio.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/gpio/sunxi_gpio.c b/drivers/gpio/sunxi_gpio.c
+index cbed8d42b7..0a9da168f0 100644
+--- a/drivers/gpio/sunxi_gpio.c
++++ b/drivers/gpio/sunxi_gpio.c
+@@ -320,6 +320,11 @@ static const struct sunxi_gpio_soc_data soc_data_a_all = {
+ 	.no_banks = SUNXI_GPIO_BANKS,
+ };
+ 
++static const struct sunxi_gpio_soc_data soc_data_a_6 = {
++	.start = 0,
++	.no_banks = 6,
++};
++
+ static const struct sunxi_gpio_soc_data soc_data_l_1 = {
+ 	.start = 'L' - 'A',
+ 	.no_banks = 1,
+@@ -360,6 +365,7 @@ static const struct udevice_id sunxi_gpio_ids[] = {
+ 	ID("allwinner,sun8i-h3-r-pinctrl",	l_1),
+ 	ID("allwinner,sun9i-a80-r-pinctrl",	l_3),
+ 	ID("allwinner,sun50i-a64-r-pinctrl",	l_1),
++	ID("allwinner,suniv-pinctrl", a_6),
+ 	{ }
+ };
+ 
+-- 
+2.17.1
+
