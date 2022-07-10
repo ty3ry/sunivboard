@@ -38,9 +38,16 @@
 
 		heartbeat {
 			label = "Heartbeat";
-			gpios = <&pio 4 10 GPIO_ACTIVE_LOW>;	// PE6
+			gpios = <&pio 4 10 GPIO_ACTIVE_LOW>;	// PE10
 			default-state = "on";
 			linux,default-trigger = "heartbeat";
+		};
+
+		activity {
+			label = "Activity";
+			gpios = <&pio 4 6 GPIO_ACTIVE_LOW>;	// PE6
+			default-state = "on";
+			linux,default-trigger = "activity";
 		};
 	};
 
@@ -102,9 +109,9 @@
 	brcmf: wifi@1 {
 		reg = <1>;
 		compatible = "brcm,bcm4329-fmac";
-		// interrupt-parent = <&pio>;
-		// interrupts = <4 5 IRQ_TYPE_LEVEL_LOW>; // PE5
-		// interrupt-names = "host-wake";
+		interrupt-parent = <&pio>;
+		interrupts = <4 5 IRQ_TYPE_LEVEL_LOW>; // PE5
+		interrupt-names = "host-wake";
 	};
 };
 
