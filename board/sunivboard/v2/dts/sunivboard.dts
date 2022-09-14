@@ -64,39 +64,6 @@
 		function = "gpio_out";
 	};
 };
-/*
-&spi0 {
-    pinctrl-names = "default";
-    pinctrl-0 = <&spi0_pins_a>;
-    status = "okay";
-
-
-	flash: en25qh64@0 {
-        #address-cells = <1>;
-        #size-cells = <1>;
-        compatible =  "eon,en25qh64", "jedec,spi-nor";
-        reg = <0>;
-        spi-max-frequency = <50000000>;
-        partitions {
-            compatible = "fixed-partitions";
-            #address-cells = <1>;
-            #size-cells = <1>;
-
-            partition@0 {
-                label = "u-boot";
-                reg = <0x000000 0x40000>;
-                //read-only;
-            };
-
-            partition@110000 {
-                label = "rootubi";
-                reg = <0x40000 0x7C0000>;
-                //read-only;
-            };
-        };
-    };
-};
-*/
 
 &spi0 {
     pinctrl-names = "default";
@@ -108,24 +75,35 @@
         #size-cells = <1>;
         compatible =  "winbond,w25q128", "jedec,spi-nor";
         reg = <0>;
-        spi-max-frequency = <50000000>;
+        spi-max-frequency = <40000000>;
         partitions {
-            compatible = "fixed-partitions";
-            #address-cells = <1>;
-            #size-cells = <1>;
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
 
-            partition@0 {
-                label = "u-boot";
-                reg = <0x000000 0x40000>;
-                //read-only;
-            };
+			partition@0 {
+				label = "u-boot";
+				reg = <0x000000 0x100000>;
+				read-only;
+			};
 
-            partition@110000 {
-                label = "rootubi";
-                reg = <0x40000 0x7C0000>;
-                //read-only;
-            };
-        };
+			partition@100000 {
+				label = "dtb";
+				reg = <0x100000 0x10000>;
+				read-only;
+			};
+
+			partition@110000 {
+				label = "kernel";
+				reg = <0x110000 0x4f0000>;
+				read-only;
+			};
+
+			partition@600000 {
+				label = "rootfs";
+				reg = <0x600000 0xA00000>;
+			};
+		};
     };
 };
 

@@ -38,16 +38,9 @@
 
 		heartbeat {
 			label = "Heartbeat";
-			gpios = <&pio 4 10 GPIO_ACTIVE_LOW>;	// PE10
+			gpios = <&pio 4 6 GPIO_ACTIVE_HIGH>;	// PE6
 			default-state = "on";
 			linux,default-trigger = "heartbeat";
-		};
-
-		activity {
-			label = "Activity";
-			gpios = <&pio 4 6 GPIO_ACTIVE_LOW>;	// PE6
-			default-state = "on";
-			linux,default-trigger = "activity";
 		};
 	};
 
@@ -64,39 +57,6 @@
 		function = "gpio_out";
 	};
 };
-/*
-&spi0 {
-    pinctrl-names = "default";
-    pinctrl-0 = <&spi0_pins_a>;
-    status = "okay";
-
-
-	flash: en25qh64@0 {
-        #address-cells = <1>;
-        #size-cells = <1>;
-        compatible =  "eon,en25qh64", "jedec,spi-nor";
-        reg = <0>;
-        spi-max-frequency = <50000000>;
-        partitions {
-            compatible = "fixed-partitions";
-            #address-cells = <1>;
-            #size-cells = <1>;
-
-            partition@0 {
-                label = "u-boot";
-                reg = <0x000000 0x40000>;
-                //read-only;
-            };
-
-            partition@110000 {
-                label = "rootubi";
-                reg = <0x40000 0x7C0000>;
-                //read-only;
-            };
-        };
-    };
-};
-*/
 
 &spi0 {
     pinctrl-names = "default";
@@ -108,24 +68,35 @@
         #size-cells = <1>;
         compatible =  "winbond,w25q128", "jedec,spi-nor";
         reg = <0>;
-        spi-max-frequency = <50000000>;
+        spi-max-frequency = <40000000>;
         partitions {
-            compatible = "fixed-partitions";
-            #address-cells = <1>;
-            #size-cells = <1>;
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
 
-            partition@0 {
-                label = "u-boot";
-                reg = <0x000000 0x40000>;
-                //read-only;
-            };
+			partition@0 {
+				label = "u-boot";
+				reg = <0x000000 0x100000>;
+				read-only;
+			};
 
-            partition@110000 {
-                label = "rootubi";
-                reg = <0x40000 0x7C0000>;
-                //read-only;
-            };
-        };
+			partition@100000 {
+				label = "dtb";
+				reg = <0x100000 0x10000>;
+				read-only;
+			};
+
+			partition@110000 {
+				label = "kernel";
+				reg = <0x110000 0x4f0000>;
+				read-only;
+			};
+
+			partition@600000 {
+				label = "rootfs";
+				reg = <0x600000 0xA00000>;
+			};
+		};
     };
 };
 
@@ -141,9 +112,9 @@
 	brcmf: wifi@1 {
 		reg = <1>;
 		compatible = "brcm,bcm4329-fmac";
-		interrupt-parent = <&pio>;
-		interrupts = <4 5 IRQ_TYPE_LEVEL_LOW>; // PE5
-		interrupt-names = "host-wake";
+		// interrupt-parent = <&pio>;
+		// interrupts = <4 5 IRQ_TYPE_LEVEL_LOW>; // PE5
+		// interrupt-names = "host-wake";
 	};
 };
 
@@ -164,13 +135,5 @@
 
 &usbphy {
 	usb0_id_det-gpio = <&pio 4 2 GPIO_ACTIVE_HIGH>; /* PE2 */
-	status = "okay";
-};
-
-&codec {
-	allwinner,audio-routing =
-		"Headphone", "HP",
-		"Headphone", "HPCOM",
-		"MIC", "Mic";
 	status = "okay";
 };
