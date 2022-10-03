@@ -4,5 +4,6 @@ echo "Speaker testing"
 # config alsa output
 amixer set Headphone unmute
 amixer set Headphone 100%
+
 # running speaker-test
-/usr/bin/speaker-test -c2 -t wav > /dev/null 2>&1 &
+#/usr/bin/speaker-test -c2 -t wav > /dev/null 2>&1 &
