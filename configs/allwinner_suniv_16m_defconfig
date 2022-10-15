@@ -96,3 +96,8 @@ BR2_SYSTEM_DHCP="wlan0"
 
 # plug event to action when eth0 plugin/plugout
 BR2_PACKAGE_IFPLUGD=y
+
+# mpd
+BR2_PACKAGE_MPD=y
+BR2_PACKAGE_MPD_CURL=y
+
