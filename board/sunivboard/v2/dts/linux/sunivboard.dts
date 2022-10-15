@@ -145,6 +145,12 @@
 	status = "okay";
 };
 
+&cir {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ir_pin>;
+	status = "okay";
+};
+
 &codec {
 	allwinner,audio-routing =
 		"Headphone", "HP",

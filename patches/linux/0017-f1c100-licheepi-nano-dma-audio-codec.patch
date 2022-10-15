@@ -1196,30 +1196,6 @@ index 4c96a9e..130d31e 100644
  	};
  };
 
-# --- suniv-f1c100s.dtsi  2022-07-25 15:34:04.223696889 +0700
-# +++ suniv-f1c100s.dtsi    2022-07-25 15:46:13.781369797 +0700
-# @@ -140,6 +140,21 @@
-#                         resets = <&ccu 26>;
-#                         status = "disabled";
-#                 };
-# +
-# +               codec: codec@1c23c00 {
-# +                       #sound-dai-cells = <0>;
-# +                       compatible = "allwinner,suniv-f1c100s-codec";
-# +                       reg = <0x01c23c00 0x400>;
-# +                       interrupts = <21>;
-# +                       clocks = <&ccu CLK_BUS_CODEC>, <&ccu CLK_CODEC>;
-# +                       clock-names = "apb", "codec";
-# +                       dmas = <&dma SUN4I_DMA_NORMAL 12>,
-# +                               <&dma SUN4I_DMA_NORMAL 12>;
-# +                       dma-names = "rx", "tx";
-# +                       resets = <&ccu RST_BUS_CODEC>;
-# +                       status = "disabled";
-# +               };
-# +
-#         };
-#  };
-
 From patchwork Sun Dec  2 21:23:17 2018
 
 Allwinner suniv F1C100s now has basic audio codec support. Activate it
