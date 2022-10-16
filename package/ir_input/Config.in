@@ -1,0 +1,4 @@
+config BR2_PACKAGE_IR_INPUT
+	bool "Test input from IR receiver"
+	help
+	  Aplication to read input Subsystem /dev/input/event<x>
