@@ -5,6 +5,30 @@
 #include <linux/input.h>
 #include <sys/select.h>
 
+struct irc
+{
+    __u16 code;
+    __u32 value; 
+    __u8  keyState;
+};
+
+#define KEY_PRESSED_JITTER  0
+#define KEY_PRESSED_ONCE    1
+#define KEY_PRESSED_REPEAT  2
+
+/**
+ * struct rc_map_table - represents a scancode/keycode pair
+ *
+ * @scancode: scan code (u32)
+ * @keycode: Linux input keycode
+ */
+struct rc_map_table {
+	__u32	scancode;
+	__u32	keycode;
+};
+
+
+
 
 int main(int argc, char **argv)
 {
@@ -12,6 +36,7 @@ int main(int argc, char **argv)
     struct input_event event;
     ssize_t bytesRead;
     unsigned char *device;
+    struct irc ircode;
 
     int ret;
     fd_set readfds;
@@ -29,6 +54,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error opening %s for reading", device);
         exit(EXIT_FAILURE);
     }
+
+    ircode.keyState = KEY_PRESSED_ONCE;
 
     while (1)
     {
@@ -69,22 +96,35 @@ int main(int argc, char **argv)
             
             if (event.type == EV_KEY)
             {
-                /**
-                 * do parsing ...
-                */
-                printf("[EV_KEY] code: %d value: %d\n",event.code, event.value);
+                printf("[EV_KEY] code: %d value: 0x%X\n",event.code, event.value);
             } 
             else if (event.type == EV_MSC)
             {
-                /*  
-                * do parsing ...
-                */
-                printf("[EV_MSC] code: %d value: %d \n", event.code, event.value);
-            }
-            else {
-                /** exception **/
+                //printf("[EV_MSC] code: %d value: 0x%x \n", event.code, event.value);
+
+#if 1
+                switch(ircode.keyState) {
+                default: break;
+                case KEY_PRESSED_JITTER:
+                    //ircode.keyState = (ircode.value != event.value) ? KEY_PRESSED_ONCE : KEY_PRESSED_JITTER;
+                //     ircode.keyState = KEY_PRESSED_ONCE;
+                // break;
+
+                case KEY_PRESSED_ONCE:
+                    printf("Key press : 0x%x \n", event.value);
+                    ircode.keyState = KEY_PRESSED_REPEAT;
+                break;
+
+                case KEY_PRESSED_REPEAT:
+                    printf("Repeat : 0x%x \n", event.value);
+                    ircode.keyState = KEY_PRESSED_JITTER;
+                break;
+
+                }
+#endif
             }
         }
+
     }
     close(fd);
     return EXIT_SUCCESS;
