@@ -1,3 +1,18 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "files.associations": {
+        "future": "c",
+        "system_error": "c",
+        "regex": "c",
+        "optional": "c",
+        "ratio": "c",
+        "type_traits": "c",
+        "array": "c",
+        "functional": "c",
+        "tuple": "c",
+        "utility": "c",
+        "istream": "c",
+        "ostream": "c",
+        "*.inc": "c"
+    }
 }
