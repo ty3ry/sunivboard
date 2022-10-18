@@ -1,0 +1,9 @@
+# Hashes of file build rules.
+03f9d766281c07ef463cce89465013e4 cspot/CMakeFiles/generate_proto_sources
+964c4e3d8944e9426938107370d8c5aa cspot/nanopb/generator/nanopb_generator.py
+97dce46b0a2575cdcdbde4d5b31ed6ef cspot/nanopb/generator/proto/nanopb_pb2.py
+ef5d401c2d050945a40d2f89a77a90e3 cspot/protobuf/authentication.pb.c
+e61d5294eb89223514f31cb5b708e211 cspot/protobuf/keyexchange.pb.c
+581223477c56092ced40e40928110fe0 cspot/protobuf/mercury.pb.c
+632983a6497a8fb270ca981c176f1c96 cspot/protobuf/metadata.pb.c
+748ff224c5afdfdf426497a1308d8f11 cspot/protobuf/spirc.pb.c

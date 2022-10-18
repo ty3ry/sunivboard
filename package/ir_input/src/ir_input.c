@@ -120,7 +120,8 @@ struct irc scan_ir_code(int fd)
         }
     }
 
-    
+    ircode.event = IR_EV_IDLE;
+    return ircode;
 }
 
 int main(int argc, char **argv)
