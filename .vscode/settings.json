@@ -12,6 +12,7 @@
         "tuple": "c",
         "utility": "c",
         "istream": "c",
-        "ostream": "c"
+        "ostream": "c",
+        "*.inc": "c"
     }
 }

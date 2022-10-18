@@ -4,42 +4,129 @@
 #include <stdlib.h>
 #include <linux/input.h>
 #include <sys/select.h>
+#include <poll.h>
+
 
 struct irc
 {
     __u16 code;
     __u32 value; 
-    __u8  keyState;
+    __u8  event;
 };
 
-#define KEY_PRESSED_JITTER  0
-#define KEY_PRESSED_ONCE    1
-#define KEY_PRESSED_REPEAT  2
+unsigned char *device;
+struct input_event event;
+struct irc ircode;
+ssize_t bytesRead;
+fd_set readfds;
 
-/**
- * struct rc_map_table - represents a scancode/keycode pair
- *
- * @scancode: scan code (u32)
- * @keycode: Linux input keycode
- */
-struct rc_map_table {
-	__u32	scancode;
-	__u32	keycode;
+
+static const __u16 key_map[][3] = {
+    {0x9117,    KEY_POWER,          KEY_POWER2}, // power
+    {0x9115,    KEY_MUTE,           KEY_MICMUTE}, // mute
+    {0x9158,    KEY_BLUETOOTH,      0},
+    {0x910a,    KEY_MODE,           0},
+    {0x9100,    KEY_NUMERIC_0,      0},
+    {0x9101,    KEY_NUMERIC_1,      0},
+    {0x9102,    KEY_NUMERIC_2,      0},
+    {0x9103,    KEY_NUMERIC_3,      0},
+    {0x9104,    KEY_NUMERIC_4,      0},
+    {0x9105,    KEY_NUMERIC_5,      0},
+    {0x9106,    KEY_NUMERIC_6,      0},
+    {0x9107,    KEY_NUMERIC_7,      0},
+    {0x9108,    KEY_NUMERIC_8,      0},
+    {0x9109,    KEY_NUMERIC_9,      0},
+    {0x9111,    KEY_MEMO,           0},
+    {0x9150,    KEY_VOLUMEUP,       0},
+    {0x9151,    KEY_VOLUMEDOWN,     0},
+    {0x911a,    KEY_NEXT,           0},
+    {0x911b,    KEY_PREVIOUS,       0},
+    {0x9113,    KEY_PLAYPAUSE,      0},
+    {0x913c,    KEY_LIGHTS_TOGGLE,  0},
+    {0x915d,    KEY_BASSBOOST,      0},
+    {0x9131,    KEY_SOUND,          0},
+    
 };
 
+#define KEY_MAP_LEN (sizeof(key_map) / sizeof(key_map[0]))
 
+#define IR_EV_IDLE          0
+#define IR_EV_SHORTPRESS    1
+#define IR_EV_PRESSHOLD     2
 
+struct irc scan_ir_code(int fd)
+{
+    static struct timeval timeout;
+    static __u16 c_press = 0;
+    static __u16 cur_code = 0;
+
+    /* Wait on fd for input */
+    FD_ZERO(&readfds);
+    FD_SET(fd, &readfds);
+
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 500000;
+
+    if ( !(select(fd + 1, &readfds, NULL, NULL, &timeout)) )
+    {
+        cur_code = 0;
+        c_press = 0;
+        ircode.event = IR_EV_IDLE;
+        return ircode;
+    }
+
+    /* File descriptor is now ready */
+    if (FD_ISSET(fd, &readfds))
+    {
+        bytesRead = read(fd, &event, sizeof(struct input_event));
+        if (bytesRead > 0)
+        {
+            if (event.type == EV_KEY)
+            {
+                printf("[EV_KEY] code: %d value: 0x%X\n",event.code, event.value);
+            } 
+            else if (event.type == EV_MSC)
+            {
+                if (cur_code != event.value) {
+                    cur_code = event.value;
+                    printf("Value: 0x%x \n", cur_code);
+                    for (int i = 0; i<KEY_MAP_LEN; i+=1) {
+                        if (cur_code == key_map[i][0]) {
+                            ircode.event = IR_EV_SHORTPRESS;
+                            ircode.value = key_map[i][1];
+                            //break;
+                            return ircode;
+                        }
+                    } 
+                }
+                else 
+                {
+                    if (c_press++ > 2)
+                    {
+                        printf("Repeat: 0x%x \n", cur_code);
+                        /* repeat */
+                        for (int i = 0; i<KEY_MAP_LEN; i+=1) {
+                            if (cur_code == key_map[i][0]){
+                                ircode.event = IR_EV_PRESSHOLD;
+                                ircode.value = key_map[i][2];
+                                //break;
+                                return ircode;
+                            }
+                        } 
+                    }
+                }
+            }
+            //return ircode;
+        }
+    }
+
+    
+}
 
 int main(int argc, char **argv)
 {
     int fd;
-    struct input_event event;
-    ssize_t bytesRead;
-    unsigned char *device;
-    struct irc ircode;
-
-    int ret;
-    fd_set readfds;
+    struct irc code;
 
     if (argc < 2) {
         return -1;
@@ -47,7 +134,7 @@ int main(int argc, char **argv)
 
     device = argv[1];
 
-    fd = open(device, O_RDONLY);
+    fd = open(device, O_RDONLY | O_NONBLOCK);
     /* Let's open our input device */
     if (fd < 0)
     {
@@ -55,74 +142,24 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    ircode.keyState = KEY_PRESSED_ONCE;
-
     while (1)
     {
-        /* Wait on fd for input */
-        FD_ZERO(&readfds);
-        FD_SET(fd, &readfds);
+        code = scan_ir_code(fd);
 
-        ret = select(fd + 1, &readfds, NULL, NULL, NULL);
+        switch (code.event) {
+        case IR_EV_IDLE:
+        break;
 
-        if (ret == -1)
-        {
-            fprintf(stderr, "select call on %s: an error occurred",
-                    device);
-            break;
+        case IR_EV_SHORTPRESS:
+        printf("[Short Press] Value: %d \n", code.value);
+        if(code.value == KEY_POWER) {
+            printf("KEY_POWER\n");
         }
-        else if (!ret)
-        { /* If we have decided to use timeout */
-            fprintf(stderr, "select on %s: TIMEOUT", device);
-            break;
-        }
+        break;
 
-        /* File descriptor is now ready */
-        if (FD_ISSET(fd, &readfds))
-        {
-            bytesRead = read(fd, &event,
-                             sizeof(struct input_event));
-            if (bytesRead == -1)
-            {
-                /* Process read input error*/
-                fprintf(stderr, "read input error \n");
-            }
-            
-            if (bytesRead != sizeof(struct input_event))
-            {
-                /* Read value is not an input even */
-                printf("Read value is not an input event \n");
-            }
-            
-            if (event.type == EV_KEY)
-            {
-                printf("[EV_KEY] code: %d value: 0x%X\n",event.code, event.value);
-            } 
-            else if (event.type == EV_MSC)
-            {
-                //printf("[EV_MSC] code: %d value: 0x%x \n", event.code, event.value);
-
-#if 1
-                switch(ircode.keyState) {
-                default: break;
-                case KEY_PRESSED_JITTER:
-                    //ircode.keyState = (ircode.value != event.value) ? KEY_PRESSED_ONCE : KEY_PRESSED_JITTER;
-                //     ircode.keyState = KEY_PRESSED_ONCE;
-                // break;
-
-                case KEY_PRESSED_ONCE:
-                    printf("Key press : 0x%x \n", event.value);
-                    ircode.keyState = KEY_PRESSED_REPEAT;
-                break;
-
-                case KEY_PRESSED_REPEAT:
-                    printf("Repeat : 0x%x \n", event.value);
-                    ircode.keyState = KEY_PRESSED_JITTER;
-                break;
-
-                }
-#endif
-            }
+        case IR_EV_PRESSHOLD:
+        printf("[Long  Press] Value: %d \n", code.value);
+        break;
         }
 
     }
