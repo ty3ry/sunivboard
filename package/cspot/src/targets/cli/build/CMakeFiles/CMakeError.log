@@ -1,0 +1,110 @@
+Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: /media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_b48a8/fast && /usr/bin/make -f CMakeFiles/cmTC_b48a8.dir/build.make CMakeFiles/cmTC_b48a8.dir/build
+make[1]: Entering directory '/media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b48a8.dir/src.c.o
+/usr/bin/cc   -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_b48a8.dir/src.c.o   -c /media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_b48a8
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b48a8.dir/link.txt --verbose=1
+/usr/bin/cc  -DCMAKE_HAVE_LIBC_PTHREAD    -rdynamic CMakeFiles/cmTC_b48a8.dir/src.c.o  -o cmTC_b48a8 
+/usr/bin/ld: CMakeFiles/cmTC_b48a8.dir/src.c.o: in function `main':
+src.c:(.text+0x46): undefined reference to `pthread_create'
+/usr/bin/ld: src.c:(.text+0x52): undefined reference to `pthread_detach'
+/usr/bin/ld: src.c:(.text+0x63): undefined reference to `pthread_join'
+collect2: error: ld returned 1 exit status
+make[1]: *** [CMakeFiles/cmTC_b48a8.dir/build.make:87: cmTC_b48a8] Error 1
+make[1]: Leaving directory '/media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_b48a8/fast] Error 2
+
+
+Source file was:
+#include <pthread.h>
+
+void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_93dae/fast && /usr/bin/make -f CMakeFiles/cmTC_93dae.dir/build.make CMakeFiles/cmTC_93dae.dir/build
+make[1]: Entering directory '/media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_93dae.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_93dae.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.16/Modules/CheckFunctionExists.c
+Linking C executable cmTC_93dae
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_93dae.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create    -rdynamic CMakeFiles/cmTC_93dae.dir/CheckFunctionExists.c.o  -o cmTC_93dae  -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+make[1]: *** [CMakeFiles/cmTC_93dae.dir/build.make:87: cmTC_93dae] Error 1
+make[1]: Leaving directory '/media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_93dae/fast] Error 2
+
+
+
+Determining if the function lrintf exists failed with the following output:
+Change Dir: /media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_b0eb1/fast && /usr/bin/make -f CMakeFiles/cmTC_b0eb1.dir/build.make CMakeFiles/cmTC_b0eb1.dir/build
+make[1]: Entering directory '/media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b0eb1.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=lrintf   -o CMakeFiles/cmTC_b0eb1.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.16/Modules/CheckFunctionExists.c
+<command-line>: warning: conflicting types for built-in function ‘lrintf’; expected ‘long int(float)’ [-Wbuiltin-declaration-mismatch]
+/usr/share/cmake-3.16/Modules/CheckFunctionExists.c:7:3: note: in expansion of macro ‘CHECK_FUNCTION_EXISTS’
+    7 |   CHECK_FUNCTION_EXISTS(void);
+      |   ^~~~~~~~~~~~~~~~~~~~~
+/usr/share/cmake-3.16/Modules/CheckFunctionExists.c:1:1: note: ‘lrintf’ is declared in header ‘<math.h>’
+  +++ |+#include <math.h>
+    1 | #ifdef CHECK_FUNCTION_EXISTS
+Linking C executable cmTC_b0eb1
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b0eb1.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=lrintf    -rdynamic CMakeFiles/cmTC_b0eb1.dir/CheckFunctionExists.c.o  -o cmTC_b0eb1 
+/usr/bin/ld: CMakeFiles/cmTC_b0eb1.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `lrintf'
+collect2: error: ld returned 1 exit status
+make[1]: *** [CMakeFiles/cmTC_b0eb1.dir/build.make:87: cmTC_b0eb1] Error 1
+make[1]: Leaving directory '/media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_b0eb1/fast] Error 2
+
+
+
+Determining if the function lrint exists failed with the following output:
+Change Dir: /media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make cmTC_7dfa6/fast && /usr/bin/make -f CMakeFiles/cmTC_7dfa6.dir/build.make CMakeFiles/cmTC_7dfa6.dir/build
+make[1]: Entering directory '/media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7dfa6.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=lrint   -o CMakeFiles/cmTC_7dfa6.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.16/Modules/CheckFunctionExists.c
+<command-line>: warning: conflicting types for built-in function ‘lrint’; expected ‘long int(double)’ [-Wbuiltin-declaration-mismatch]
+/usr/share/cmake-3.16/Modules/CheckFunctionExists.c:7:3: note: in expansion of macro ‘CHECK_FUNCTION_EXISTS’
+    7 |   CHECK_FUNCTION_EXISTS(void);
+      |   ^~~~~~~~~~~~~~~~~~~~~
+/usr/share/cmake-3.16/Modules/CheckFunctionExists.c:1:1: note: ‘lrint’ is declared in header ‘<math.h>’
+  +++ |+#include <math.h>
+    1 | #ifdef CHECK_FUNCTION_EXISTS
+Linking C executable cmTC_7dfa6
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7dfa6.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=lrint    -rdynamic CMakeFiles/cmTC_7dfa6.dir/CheckFunctionExists.c.o  -o cmTC_7dfa6 
+/usr/bin/ld: CMakeFiles/cmTC_7dfa6.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `lrint'
+collect2: error: ld returned 1 exit status
+make[1]: *** [CMakeFiles/cmTC_7dfa6.dir/build.make:87: cmTC_7dfa6] Error 1
+make[1]: Leaving directory '/media/frame1bit/Data/media-player/cspot/targets/cli/build/CMakeFiles/CMakeTmp'
+make: *** [Makefile:121: cmTC_7dfa6/fast] Error 2
+
+
+

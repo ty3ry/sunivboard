@@ -54,6 +54,8 @@ static const __u16 key_map[][3] = {
 #define IR_EV_SHORTPRESS    1
 #define IR_EV_PRESSHOLD     2
 
+#define IR_EV_PRESSHOLD_COUNT   2
+
 struct irc scan_ir_code(int fd)
 {
     static struct timeval timeout;
@@ -65,13 +67,14 @@ struct irc scan_ir_code(int fd)
     FD_SET(fd, &readfds);
 
     timeout.tv_sec = 0;
-    timeout.tv_usec = 500000;
+    timeout.tv_usec = 200000;
+
+    ircode.event = IR_EV_IDLE;
 
     if ( !(select(fd + 1, &readfds, NULL, NULL, &timeout)) )
     {
         cur_code = 0;
         c_press = 0;
-        ircode.event = IR_EV_IDLE;
         return ircode;
     }
 
@@ -89,38 +92,36 @@ struct irc scan_ir_code(int fd)
             {
                 if (cur_code != event.value) {
                     cur_code = event.value;
-                    printf("Value: 0x%x \n", cur_code);
+                    //printf("Value: 0x%x \n", cur_code);
                     for (int i = 0; i<KEY_MAP_LEN; i+=1) {
                         if (cur_code == key_map[i][0]) {
                             ircode.event = IR_EV_SHORTPRESS;
                             ircode.value = key_map[i][1];
-                            //break;
-                            return ircode;
+                            break;
                         }
                     } 
                 }
                 else 
                 {
-                    if (c_press++ > 2)
+                    if (c_press++ > IR_EV_PRESSHOLD_COUNT)
                     {
-                        printf("Repeat: 0x%x \n", cur_code);
+                        //printf("Repeat: 0x%x \n", cur_code);
                         /* repeat */
                         for (int i = 0; i<KEY_MAP_LEN; i+=1) {
                             if (cur_code == key_map[i][0]){
                                 ircode.event = IR_EV_PRESSHOLD;
                                 ircode.value = key_map[i][2];
-                                //break;
-                                return ircode;
+                                break;
                             }
                         } 
                     }
                 }
             }
-            //return ircode;
         }
     }
 
     
+    return ircode;
 }
 
 int main(int argc, char **argv)

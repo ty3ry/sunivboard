@@ -1,0 +1,1 @@
+/usr/bin/c++  -O3 -DNDEBUG  -rdynamic CMakeFiles/cspotcli.dir/CliFile.cpp.o CMakeFiles/cspotcli.dir/CommandLineArguments.cpp.o CMakeFiles/cspotcli.dir/main.cpp.o  -o cspotcli  cspot/libcspot.a cspot/bell/libbell.a /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so -lpthread cspot/bell/opus/libopus.a -lm -lasound -ldns_sd 
