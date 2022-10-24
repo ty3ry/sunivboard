@@ -1,1 +1,0 @@
-#define PACKAGE_VERSION "1.3.1-100-g12a356e4"
