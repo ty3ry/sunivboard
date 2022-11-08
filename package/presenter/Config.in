@@ -1,0 +1,4 @@
+config BR2_PACKAGE_PRESENTER
+	bool "Presenter using IR remote"
+	help
+	  USB HID implementation used to convert IR receiver event to keyboard HID

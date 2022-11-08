@@ -4,7 +4,6 @@ USB_HID_SITE_METHOD = local
 
 USB_HID_SECTION = usb
 USB_HID_DESCRIPTION = USB HID test implementation
-#USB_HID_OPKG_DEPENDENCIES = alsa-lib,libasound
 
 define USB_HID_BUILD_CMDS
 	$(TARGET_CC) -o $(@D)/usb_hid $(@D)/usb_hid.c

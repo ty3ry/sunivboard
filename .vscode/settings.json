@@ -13,6 +13,7 @@
         "utility": "c",
         "istream": "c",
         "ostream": "c",
-        "*.inc": "c"
+        "*.inc": "c",
+        "ir_recv.h": "c"
     }
 }
