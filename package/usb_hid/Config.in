@@ -1,0 +1,4 @@
+config BR2_PACKAGE_USB_HID
+	bool "Testing USB HID"
+	help
+	  user application to test USB HID
