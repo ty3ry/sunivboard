@@ -38,7 +38,7 @@
 
 		heartbeat {
 			label = "Heartbeat";
-			gpios = <&pio 4 10 GPIO_ACTIVE_LOW>;	// PE10
+			gpios = <&pio 4 10 GPIO_ACTIVE_HIGH>;	// PE10
 			default-state = "on";
 			linux,default-trigger = "heartbeat";
 		};
@@ -96,13 +96,13 @@
 
 			partition@110000 {
 				label = "kernel";
-				reg = <0x110000 0x400000>;
+				reg = <0x110000 0x360000>;
 				read-only;
 			};
 
 			partition@510000 {
 				label = "rootfs";
-				reg = <0x510000 0x2f0000>;
+				reg = <0x470000 0x390000>;
 			};
 		};
     };
@@ -138,12 +138,12 @@
 };
 
 &usb_otg {
-	dr_mode = "otg";
+	dr_mode = "host";
 	status = "okay";
 };
 
 &usbphy {
-	usb0_id_det-gpio = <&pio 4 2 GPIO_ACTIVE_HIGH>; /* PE2 */
+	usb0_id_det = <&pio 4 2 GPIO_ACTIVE_HIGH>; /* PE2 */
 	status = "okay";
 };
 
@@ -151,6 +151,9 @@
 	allwinner,audio-routing =
 		"Headphone", "HP",
 		"Headphone", "HPCOM",
+		"LINEIN", "Line In",
+		"FMINL", "Left FM In",
+		"FMINR", "Right FM In",
 		"MIC", "Mic";
 	status = "okay";
 };
