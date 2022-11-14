@@ -2,4 +2,4 @@
 
 
 echo "Start presenter.."
-presenter
+presenter &

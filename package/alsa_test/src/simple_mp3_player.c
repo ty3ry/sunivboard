@@ -15,18 +15,23 @@
 #include <alsa/asoundlib.h>
 
 
-#define SAMPLE_RATE 48000
+#define SAMPLE_RATE 44100
 #define AMPLITUDE 10000
 
 //pa_simple *device = NULL;
 
 int ret = 1;
 int error;
+
+snd_pcm_t *pcm_handle;
 struct mad_stream mad_stream;
 struct mad_frame mad_frame;
 struct mad_synth mad_synth;
 
-void output(snd_pcm_t *apcm, struct mad_header const *header, struct mad_pcm *pcm);
+void output(struct mad_header const *header, struct mad_pcm *pcm);
+static enum mad_flow output1(void *data,
+                            struct mad_header const *header,
+                            struct mad_pcm *pcm);
 void check(int ret);
 
 int main(int argc, char **argv) {
@@ -43,22 +48,22 @@ int main(int argc, char **argv) {
     //     return 255;
     // }
     /**TODO: set up alsa */
-    snd_pcm_t *pcm;
-    check(snd_pcm_open(&pcm, "default", SND_PCM_STREAM_PLAYBACK, 0));
+   
+    check(snd_pcm_open(&pcm_handle, "default", SND_PCM_STREAM_PLAYBACK, 0));
 
     snd_pcm_hw_params_t *hw_params;
     snd_pcm_hw_params_alloca(&hw_params);
     //	check(snd_pcm_hw_params_malloc(&hw_params));
 
-    check(snd_pcm_hw_params_any(pcm, hw_params));
-    check(snd_pcm_hw_params_set_access(pcm, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED));
-    check(snd_pcm_hw_params_set_format(pcm, hw_params, SND_PCM_FORMAT_S16_LE));
-    check(snd_pcm_hw_params_set_channels(pcm, hw_params, 1));
-    check(snd_pcm_hw_params_set_rate(pcm, hw_params, SAMPLE_RATE, 0));
-    check(snd_pcm_hw_params_set_periods(pcm, hw_params, 10, 0));
-    check(snd_pcm_hw_params_set_period_time(pcm, hw_params, 100000, 0)); // 0.1 seconds period time
+    check(snd_pcm_hw_params_any(pcm_handle, hw_params));
+    check(snd_pcm_hw_params_set_access(pcm_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED));
+    check(snd_pcm_hw_params_set_format(pcm_handle, hw_params, SND_PCM_FORMAT_S16_LE));
+    check(snd_pcm_hw_params_set_channels(pcm_handle, hw_params, 2));
+    check(snd_pcm_hw_params_set_rate(pcm_handle, hw_params, SAMPLE_RATE, 0));
+    check(snd_pcm_hw_params_set_periods(pcm_handle, hw_params, 10, 0));
+    check(snd_pcm_hw_params_set_period_time(pcm_handle, hw_params, 100000, 0)); // 0.1 seconds period time
 
-    check(snd_pcm_hw_params(pcm, hw_params));
+    check(snd_pcm_hw_params(pcm_handle, hw_params));
 
     // Initialize MAD library
     mad_stream_init(&mad_stream);
@@ -103,7 +108,7 @@ int main(int argc, char **argv) {
         }
         // Synthesize PCM data of frame
         mad_synth_frame(&mad_synth, &mad_frame);
-        output(pcm, &mad_frame.header, &mad_synth.pcm);
+        output1(NULL, &mad_frame.header, &mad_synth.pcm);
     }
 
     // Close
@@ -118,8 +123,8 @@ int main(int argc, char **argv) {
     // Close PulseAudio output
     // if (device)
     //     pa_simple_free(device);
-    check(snd_pcm_drain(pcm));
-    check(snd_pcm_close(pcm));
+    check(snd_pcm_drain(pcm_handle));
+    check(snd_pcm_close(pcm_handle));
 
     return EXIT_SUCCESS;
 }
@@ -138,7 +143,81 @@ int scale(mad_fixed_t sample) {
 }
 
 
-void output(snd_pcm_t *apcm, struct mad_header const *header, struct mad_pcm *pcm) {
+static enum mad_flow output1(void *data,
+                            struct mad_header const *header,
+                            struct mad_pcm *pcm)
+{
+    unsigned int nchannels, nsamples, n;
+    mad_fixed_t const *left_ch, *right_ch;
+
+    /* pcm->samplerate contains the sampling frequency */
+
+    nchannels = pcm->channels;
+    n = nsamples = pcm->length;
+    left_ch = pcm->samples[0];
+    right_ch = pcm->samples[1];
+
+    unsigned char Output[6912], *OutputPtr;
+    int fmt, wrote, speed, exact_rate, err, dir;
+
+    OutputPtr = Output;
+
+    while (nsamples--)
+    {
+        signed int sample;
+
+        /* output sample(s) in 16-bit signed little-endian PCM */
+
+        sample = scale(*left_ch++);
+
+        *(OutputPtr++) = sample >> 0;
+        *(OutputPtr++) = sample >> 8;
+        if (nchannels == 2)
+        {
+            sample = scale(*right_ch++);
+            *(OutputPtr++) = sample >> 0;
+            *(OutputPtr++) = sample >> 8;
+        }
+    }
+
+    OutputPtr = Output;
+    snd_pcm_writei(pcm_handle, OutputPtr, n);
+    OutputPtr = Output;
+
+    return MAD_FLOW_CONTINUE;
+
+#if 0
+  unsigned int nchannels, nsamples;
+  mad_fixed_t const *left_ch, *right_ch;
+
+  /* pcm->samplerate contains the sampling frequency */
+
+  nchannels = pcm->channels;
+  nsamples  = pcm->length;
+  left_ch   = pcm->samples[0];
+  right_ch  = pcm->samples[1];
+
+  while (nsamples--) {
+    signed int sample;
+
+    /* output sample(s) in 16-bit signed little-endian PCM */
+
+    sample = scale(*left_ch++);
+    putchar((sample >> 0) & 0xff);
+    putchar((sample >> 8) & 0xff);
+
+    if (nchannels == 2) {
+      sample = scale(*right_ch++);
+      putchar((sample >> 0) & 0xff);
+      putchar((sample >> 8) & 0xff);
+    }
+  }
+
+  return MAD_FLOW_CONTINUE;
+#endif
+}
+
+void output(struct mad_header const *header, struct mad_pcm *pcm) {
     register int nsamples = pcm->length;
     mad_fixed_t const *left_ch = pcm->samples[0], *right_ch = pcm->samples[1];
     static char stream[1152*4];
@@ -158,7 +237,7 @@ void output(snd_pcm_t *apcm, struct mad_header const *header, struct mad_pcm *pc
         //     fprintf(stderr, "pa_simple_write() failed: %s\n", pa_strerror(error));
         //     return;
         // }
-        snd_pcm_writei(apcm, stream, (size_t)1152*4);
+        snd_pcm_writei(pcm_handle, stream, 1151);
 
     } else {
         printf("Mono not supported!");

@@ -95,13 +95,13 @@
 
 			partition@110000 {
 				label = "kernel";
-				reg = <0x110000 0x4f0000>;
+				reg = <0x110000 0x400000>;
 				read-only;
 			};
 
-			partition@600000 {
+			partition@510000 {
 				label = "rootfs";
-				reg = <0x600000 0xA00000>;
+				reg = <0x510000 0xAF0000>;
 			};
 		};
     };
@@ -136,7 +136,7 @@
 };
 
 &usb_otg {
-	dr_mode = "peripheral";
+	dr_mode = "host";
 	status = "okay";
 };
 
