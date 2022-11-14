@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# TODO: check currently active protocols support 
+ 
+IR_PROTO_RC5="rc-5"
+IR_PROTO_NEC="nec" 
+IR_PROTO_RC6="rc-6" 
+IR_PROTO_JVC="jvc" 
+IR_PROTO_SONY="sony" 
+IR_PROTO_RC5SZ="rc-5-sz"
+IR_PROTO_SANYO="sanyo"
+IR_PROTO_SHARP="sharp" 
+IR_PROTO_MCE="mce_kbd"
+IR_PROTO_XMP="xmp"
+IR_PROTO_IMON="imon" 
+IR_PROTO_RCMM="rc-mm"
+
+echo "Set RC default protocol to $IR_PROTO_NEC "
+
+# set default potocols on rc controller
+echo $IR_PROTO_NEC > /sys/class/rc/rc0/protocols

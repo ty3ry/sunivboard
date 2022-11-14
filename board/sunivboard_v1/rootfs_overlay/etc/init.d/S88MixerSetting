@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# echo "Speaker testing"
+
+VOLUME=60
+
+# config alsa output
+echo "Unmute Speaker"
+amixer set Headphone unmute > /dev/null 2>&1
+echo "Set volume to $VOLUME"
+amixer set Headphone $VOLUME% > /dev/null 2>&1
+
+# running speaker-test
+#/usr/bin/speaker-test -c2 -t wav > /dev/null 2>&1 &

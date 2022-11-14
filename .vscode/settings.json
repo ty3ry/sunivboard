@@ -14,6 +14,9 @@
         "istream": "c",
         "ostream": "c",
         "*.inc": "c",
-        "ir_recv.h": "c"
+        "ir_recv.h": "c",
+        "mad.h": "c",
+        "id3tag.h": "c",
+        "mman.h": "c"
     }
 }
