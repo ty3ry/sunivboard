@@ -16,7 +16,7 @@ fd_set readfds;
 
 static const __u16 key_map[][3] = {
     {0x9117,    KEY_POWER,          KEY_POWER2}, // power
-    {0x9115,    KEY_MUTE,           KEY_MICMUTE}, // mute
+    {0x9115,    KEY_MUTE,           KEY_MUTE}, // mute
     {0x9158,    KEY_BLUETOOTH,      0},
     {0x910a,    KEY_MODE,           0},
     {0x9100,    KEY_NUMERIC_0,      0},
@@ -30,12 +30,12 @@ static const __u16 key_map[][3] = {
     {0x9108,    KEY_NUMERIC_8,      0},
     {0x9109,    KEY_NUMERIC_9,      0},
     {0x9111,    KEY_MEMO,           0},
-    {0x9150,    KEY_VOLUMEUP,       0},
-    {0x9151,    KEY_VOLUMEDOWN,     0},
-    {0x911a,    KEY_NEXT,           0},
-    {0x911b,    KEY_PREVIOUS,       0},
+    {0x9150,    KEY_VOLUMEUP,       KEY_VOLUMEUP},
+    {0x9151,    KEY_VOLUMEDOWN,     KEY_VOLUMEDOWN},
+    {0x911a,    KEY_NEXT,           KEY_NEXT},
+    {0x911b,    KEY_PREVIOUS,       KEY_PREVIOUS},
     {0x9113,    KEY_PLAYPAUSE,      0},
-    {0x913c,    KEY_LIGHTS_TOGGLE,  0},
+    {0x913c,    KEY_LIGHTS_TOGGLE,  KEY_LIGHTS_TOGGLE},
     {0x915d,    KEY_BASSBOOST,      0},
     {0x9131,    KEY_SOUND,          0},
     

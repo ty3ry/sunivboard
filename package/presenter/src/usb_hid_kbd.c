@@ -40,7 +40,7 @@ int usbhid_write(int fd, char *buffer, int length)
     return n;
 }
 
-void set_keycode(int fd, uint8_t modifier_key_ctrl, uint8_t key_ctrl)
+void set_keycode(int fd, uint8_t modifier_key_ctrl, uint8_t key_ctrl, uint8_t auto_release)
 {
     /**
      * hid report format:
@@ -60,9 +60,14 @@ void set_keycode(int fd, uint8_t modifier_key_ctrl, uint8_t key_ctrl)
     report[2] = key_ctrl;
     /* press key event */
     usbhid_write(fd, report, 8);
-    /* reset report */
-    memset(report, 0x0, sizeof(report));
-    usbhid_write(fd, report, 8); /* release key */
+
+    if (auto_release)
+    {
+        /* reset report */
+        memset(report, 0x0, sizeof(report)); 
+        usleep(100000);
+        usbhid_write(fd, report, 8); /* release key */
+    }
 }
 
 //#define CONFIG_SETUP_USB_DRIVER

@@ -11,6 +11,7 @@
 #include "usb_hid_kbd.h"
 
 unsigned char *device;
+static uint8_t key_modifier = 0;
 
 int main(int argc, char **argv)
 {
@@ -43,27 +44,66 @@ int main(int argc, char **argv)
         case IR_EV_SHORTPRESS:
             printf("[Short Press] Value: %d \n", code.value);
             switch(code.value){
-            case KEY_POWER:
-                printf("KEY_POWER\n");
-                set_keycode(fd_hid, 0, HID_KEY_POWER);
+            /** ESC */
+            case KEY_POWER: set_keycode(fd_hid, key_modifier, HID_KEY_ESC, 1); break;
+            case KEY_NUMERIC_0: set_keycode(fd_hid, key_modifier, HID_KEY_A, 1); break;
+            case KEY_NUMERIC_1: set_keycode(fd_hid, key_modifier, HID_KEY_B, 1); break;
+            case KEY_NUMERIC_2: set_keycode(fd_hid, key_modifier, HID_KEY_C, 1); break;
+            case KEY_NUMERIC_3: set_keycode(fd_hid, key_modifier, HID_KEY_D, 1); break;
+            case KEY_NUMERIC_4: set_keycode(fd_hid, key_modifier, HID_KEY_E, 1); break;
+            case KEY_NUMERIC_5: set_keycode(fd_hid, key_modifier, HID_KEY_F, 1); break;
+            case KEY_NUMERIC_6: set_keycode(fd_hid, key_modifier, HID_KEY_G, 1); break;
+            case KEY_NUMERIC_7: set_keycode(fd_hid, key_modifier, HID_KEY_H, 1); break;
+            case KEY_NUMERIC_8: set_keycode(fd_hid, key_modifier, HID_KEY_I, 1); break;
+            case KEY_NUMERIC_9: set_keycode(fd_hid, key_modifier, HID_KEY_J, 1); break;
+
+            case KEY_PLAYPAUSE: set_keycode(fd_hid, key_modifier, HID_KEY_ENTER, 1); break;
+            case KEY_BLUETOOTH: set_keycode(fd_hid, key_modifier, HID_KEY_F11, 1); break;
+            case KEY_NEXT:      set_keycode(fd_hid, key_modifier, HID_KEY_RIGHT, 1); break;
+            case KEY_PREVIOUS:  set_keycode(fd_hid, key_modifier, HID_KEY_LEFT, 1); break;
+            case KEY_VOLUMEUP:  set_keycode(fd_hid, key_modifier, HID_KEY_UP, 1); break;
+            case KEY_VOLUMEDOWN:    set_keycode(fd_hid, key_modifier, HID_KEY_DOWN, 1); break;
+            case KEY_MEMO:          
+                set_keycode(fd_hid, key_modifier, HID_KEY_TAB, 1);
                 break;
-            case KEY_NUMERIC_0: set_keycode(fd_hid, 0, HID_KEY_A); break;
-            case KEY_NUMERIC_1: set_keycode(fd_hid, 0, HID_KEY_B); break;
-            case KEY_NUMERIC_2: set_keycode(fd_hid, 0, HID_KEY_C); break;
-            case KEY_NUMERIC_3: set_keycode(fd_hid, 0, HID_KEY_D); break;
-            case KEY_NUMERIC_4: set_keycode(fd_hid, 0, HID_KEY_E); break;
-            case KEY_NUMERIC_5: set_keycode(fd_hid, 0, HID_KEY_F); break;
-            case KEY_NUMERIC_6: set_keycode(fd_hid, 0, HID_KEY_G); break;
-            case KEY_NUMERIC_7: set_keycode(fd_hid, 0, HID_KEY_H); break;
-            case KEY_NUMERIC_8: set_keycode(fd_hid, 0, HID_KEY_I); break;
-            case KEY_NUMERIC_9: set_keycode(fd_hid, 0, HID_KEY_J); break;
+
+            /* present current slide */
+            case KEY_MODE: set_keycode(fd_hid, RIGHT_SHIFT, HID_KEY_F5, 1); break;
+            /* light as Alt (right) */
+            case KEY_LIGHTS_TOGGLE:  
+                key_modifier |= (RIGHT_SHIFT);
+                break;
+            case KEY_MUTE:  
+                key_modifier |= (RIGHT_ALT);
+                set_keycode(fd_hid, 0, HID_KEY_RIGHTALT, 0);
+                break;
             default: break;
             }
         break;
 
         case IR_EV_PRESSHOLD:
-        printf("[Long  Press] Value: %d \n", code.value);
+            printf("[Long  Press] Value: %d \n", code.value);
+
+            switch(code.value){
+            /* light as Alt (right) */
+            case KEY_LIGHTS_TOGGLE:  
+                key_modifier &= ~(RIGHT_SHIFT);
+                break;
+            case KEY_MUTE:  
+                key_modifier &= ~(RIGHT_ALT);
+                break;
+            
+            case KEY_NEXT:      set_keycode(fd_hid, key_modifier, HID_KEY_RIGHT, 1); break;
+            case KEY_PREVIOUS:  set_keycode(fd_hid, key_modifier, HID_KEY_LEFT, 1); break;
+            case KEY_VOLUMEUP:  set_keycode(fd_hid, key_modifier, HID_KEY_UP, 1); break;
+            case KEY_VOLUMEDOWN:    set_keycode(fd_hid, key_modifier, HID_KEY_DOWN, 1); break;
+
+            default : break;
+            }
+
         break;
+
+        
         }
 
     }

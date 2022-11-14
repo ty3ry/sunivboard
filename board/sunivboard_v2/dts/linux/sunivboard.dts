@@ -151,10 +151,21 @@
 	status = "okay";
 };
 
+// &codec {
+// 	allwinner,audio-routing =
+// 		"Headphone", "HP",
+// 		"Headphone", "HPCOM",
+// 		"MIC", "Mic";
+// 	status = "okay";
+// };
+
 &codec {
 	allwinner,audio-routing =
 		"Headphone", "HP",
 		"Headphone", "HPCOM",
+		"LINEIN", "Line In",
+		"FMINL", "Left FM In",
+		"FMINR", "Right FM In",
 		"MIC", "Mic";
 	status = "okay";
 };
