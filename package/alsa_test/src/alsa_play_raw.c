@@ -1,7 +1,3 @@
-/**
- * file: alsa_play_tone.c
-*/
-
 #include <alloca.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -26,7 +22,6 @@ typedef float f32;
 snd_pcm_t *playback_handle;
 snd_pcm_uframes_t frames;
 
-
 f32 clamp(f32 value, f32 min, f32 max)
 {
     if (value < min)
@@ -36,36 +31,6 @@ f32 clamp(f32 value, f32 min, f32 max)
     return value;
 }
 
-s16 *square_wave(s16 *buffer, size_t sample_count, int freq)
-{
-    int samples_full_cycle = floorf((f32)SAMPLE_RATE / (f32)freq);
-    int samples_half_cycle = floorf((f32)samples_full_cycle / 2.0f);
-    int cycle_index = 0;
-    for (int i = 0; i < sample_count; i++)
-    {
-        s16 sample = 0;
-        if (cycle_index < samples_half_cycle)
-        {
-            sample = +AMPLITUDE;
-        }
-        else
-        {
-            sample = -AMPLITUDE;
-        }
-        cycle_index = (cycle_index + 1) % samples_full_cycle;
-        buffer[i] = sample;
-    }
-    return buffer;
-}
-
-s16 *sine_wave(s16 *buffer, size_t sample_count, int freq)
-{
-    for (int i = 0; i < sample_count; i++)
-    {
-        buffer[i] = AMPLITUDE * sinf(((f32)i / (f32)SAMPLE_RATE) * 2 * M_PI * freq);
-    }
-    return buffer;
-}
 
 void print_usage(char *progname)
 {
@@ -73,11 +38,10 @@ void print_usage(char *progname)
         "Usage: %s [OPTIONS]...\n\n"
         "Options:\n"
         "    -h, --help          Display this message\n"
-        "    -d, DEVICE          Card Identifier \n"
+        "    -d, device          Device / Card used for pcm playback\n"
         "    -l, --loop          Play sound in an infinite loop\n"
-        "    -t, --type [sine|square]\n"
-        "                        Generate and play a sound wave of the specified type\n"
-        "    -f, --freq FREQ     Specify the frequency of the generated sound wave in Hz\n"
+        "    -s  sampling_rate   sampling rate\n"
+        "    -r  --raw PATH      Play a raw pcm file\n"
         "    --fade MS           Fade (in and out) in milliseconds, ignored when not playing a raw pcm\n"
         "\n", progname);
 }
@@ -108,24 +72,21 @@ bool expect_int(char *str, int *out)
 typedef struct
 {
     bool display_help;
-    bool should_loop;
     char *playback_name;
-    char *wave_type;
-    unsigned int rate;  /* sample rate */
-    int freq;
+    char *raw_path;
+    unsigned int channel;
+    unsigned int rate;
     int fade_ms;
 } CmdLineOptions;
 
 CmdLineOptions parse_command_line(int argc, char **argv)
 {
     CmdLineOptions options = {
+        .channel = 2,
         .playback_name = "default",
-        .rate = SAMPLE_RATE,
-        .wave_type = "sine",
-        .freq = 440
+        .rate = SAMPLE_RATE
     };
 
-    
     if (argc == 1)
     {
         print_usage(argv[0]);
@@ -138,10 +99,6 @@ CmdLineOptions parse_command_line(int argc, char **argv)
         {
             options.display_help = true;
         }
-        else if (strcmp(arg, "-l") == 0 || strcmp(arg, "--loop") == 0)
-        {
-            options.should_loop = true;
-        }
         else if (strcmp(arg, "-d") == 0)
         {
             if (i + 1 == argc)
@@ -151,21 +108,16 @@ CmdLineOptions parse_command_line(int argc, char **argv)
             }
             options.playback_name = argv[++i];
         }
-        else if (strcmp(arg, "-t") == 0 || strcmp(arg, "--type") == 0)
+        else if (strcmp(arg, "-r") == 0 || strcmp(arg, "--raw") == 0)
         {
             if (i + 1 == argc)
             {
                 fprintf(stderr, "error: Argument to option '%s' missing\n", arg);
                 exit(1);
             }
-            options.wave_type = argv[++i];
-            if (strcmp(options.wave_type, "sine") != 0 && strcmp(options.wave_type, "square") != 0)
-            {
-                fprintf(stderr, "error: Unknown wave type: `%s`\n", options.wave_type);
-                exit(1);
-            }
+            options.raw_path = argv[++i];
         }
-        else if (strcmp(arg, "-f") == 0 || strcmp(arg, "--freq") == 0)
+        else if (strcmp(arg, "-c") == 0)
         {
             if (i + 1 == argc)
             {
@@ -173,9 +125,23 @@ CmdLineOptions parse_command_line(int argc, char **argv)
                 exit(1);
             }
             arg = argv[++i];
-            if (!expect_int(arg, &options.freq) || options.freq < 20 || options.freq > 20000)
+            if (!expect_int(arg, &options.channel) || (options.channel != 2 && options.channel != 1))
             {
-                fprintf(stderr, "error: Frequency needs to be an integer between 20-20000 (instead was `%s`)\n", arg);
+                fprintf(stderr, "error: Channel value not valid , set 2 for stereo and 1 for mono output\n", arg);
+                exit(1);
+            }
+        }
+        else if (strcmp(arg, "-s") == 0)
+        {
+            if (i + 1 == argc)
+            {
+                fprintf(stderr, "error: Argument to option '%s' missing\n", arg);
+                exit(1);
+            }
+            arg = argv[++i];
+            if (!expect_int(arg, &options.rate))
+            {
+                fprintf(stderr, "error: Sampling rate value not valid\n", arg);
                 exit(1);
             }
         }
@@ -247,16 +213,16 @@ int sound_init(CmdLineOptions *cmdOpt)
 	}
 
 	/* Set the sound card channel */
-	if ((err = snd_pcm_hw_params_set_channels(playback_handle, params, 1)) < 0) {
+	if ((err = snd_pcm_hw_params_set_channels(playback_handle, params, cmdOpt->channel)) < 0) {
 		printf("cannot set channel count (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
-	frames = 1152;
-	if ((err = snd_pcm_hw_params_set_period_size_near(playback_handle, params, &frames, 0)) < 0) {
-		printf("cannot set period size (%s)\n", snd_strerror(err));
-		return -1;
-	}
+	// frames = 1152;
+	// if ((err = snd_pcm_hw_params_set_period_size_near(playback_handle, params, &frames, 0)) < 0) {
+	// 	printf("cannot set period size (%s)\n", snd_strerror(err));
+	// 	return -1;
+	// }
 
 	if ((err = snd_pcm_hw_params(playback_handle, params)) < 0) {
 		printf("cannot set parameters (%s)\n", snd_strerror(err));
@@ -273,6 +239,49 @@ int sound_init(CmdLineOptions *cmdOpt)
 }
 
 
+char *read_entire_file(char *path, size_t *size)
+{
+    FILE *f = fopen(path, "rb");
+    if (!f)
+    {
+        fprintf(stderr, "error: Unable to open file `%s`, please provide a valid file\n", path);
+        exit(1);
+    }
+    if (fseek(f, 0, SEEK_END) != 0)
+    {
+        fprintf(stderr, "error: Unable to perform seek operation on file `%s`\n", path);
+        fprintf(stderr, "1\n");
+        fclose(f);
+        exit(1);
+    }
+    long file_size = ftell(f);
+    if (file_size < 0)
+    {
+        fprintf(stderr, "error: Unable to get file size for `%s`\n", path);
+        fclose(f);
+        exit(1);
+    }
+    if (fseek(f, 0, SEEK_SET) != 0)
+    {
+        fprintf(stderr, "error: Unable to perform seek operation on file `%s`\n", path);
+        fclose(f);
+        exit(1);
+    }
+    char *contents = (char *)malloc(file_size);
+    if (fread(contents, 1, file_size, f) != file_size)
+    {
+        fprintf(stderr, "error: Unable to read file `%s`\n", path);
+        fclose(f);
+        free(contents);
+        exit(1);
+    }
+    if (size)
+    {
+        *size = file_size;
+    }
+    return contents;
+}
+
 int main(int argc, char **argv)
 {
     CmdLineOptions options = parse_command_line(argc, argv);
@@ -285,22 +294,60 @@ int main(int argc, char **argv)
 
     if (sound_init(&options) < 0)
 	{
-		printf("Failed to init sound card\n");
+		printf("Failed to init sound card (%s)\n", options.playback_name);
 		return -1;
 	}
+    
+    int fade_in_samples = options.fade_ms * (SAMPLE_RATE / 1000);
+    s16 *samples;
+    size_t file_size = 0;
+    int sample_count = 0;
+    if (options.raw_path)
+    {
+        samples = (s16 *)read_entire_file(options.raw_path, &file_size);
+        sample_count = file_size / sizeof(s16);
+    }
 
     do
     {
-        s16 buffer[SAMPLE_RATE] = {0};
-        if (strcmp(options.wave_type, "sine") == 0)
+        int sample_index = 0;
+
+        for (int offset = 0; offset < file_size; offset += SAMPLE_RATE * sizeof(s16))
         {
-            snd_pcm_writei(playback_handle, sine_wave(buffer, SAMPLE_RATE, options.freq), SAMPLE_RATE);
+            int chunk_sample_count = SAMPLE_RATE;
+            int chunk_size = chunk_sample_count * sizeof(s16);
+            if (offset + chunk_size > file_size)
+            {
+                chunk_sample_count = (file_size - offset) / sizeof(s16);
+            }
+
+            s16 *sample_to_write = (s16 *)((u8 *)samples + offset);
+            for (int i = 0; i < chunk_sample_count; i++)
+            {
+                f32 volume;
+                if (sample_index < fade_in_samples)
+                {
+                    volume = (sample_index) / (f32)fade_in_samples;
+                }
+                else if ((sample_count - sample_index) < fade_in_samples)
+                {
+                    volume = (sample_count - sample_index) / (f32)fade_in_samples;
+                }
+                else
+                {
+                    volume = 1.0f;
+                }
+                s16 *sample = sample_to_write + i;
+                f32 normalized_sample = *sample / (f32)32768;
+                normalized_sample *= volume;
+                *sample = (s16)clamp(normalized_sample * 32768, -32768, 32767);
+
+                sample_index++;
+            }
+
+            snd_pcm_writei(playback_handle, (u8 *)samples + offset, chunk_sample_count);
         }
-        else if (strcmp(options.wave_type, "square") == 0)
-        {
-            snd_pcm_writei(playback_handle, square_wave(buffer, SAMPLE_RATE, options.freq), SAMPLE_RATE);
-        }
-    } while (options.should_loop);
+    } while (1);
 
     snd_pcm_drain(playback_handle);
     snd_pcm_close(playback_handle);

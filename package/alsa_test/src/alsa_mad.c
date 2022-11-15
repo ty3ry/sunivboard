@@ -27,7 +27,7 @@ typedef struct
 	int channel;
 } CmdLineOptions;
 
-snd_pcm_t *handle;
+snd_pcm_t *playback_handle;
 snd_pcm_uframes_t frames;
 pthread_mutex_t lock;
 pthread_cond_t empty;
@@ -155,7 +155,7 @@ int sound_init(CmdLineOptions *cmdOpt)
 	snd_pcm_hw_params_t *params;
 
 	/* open the pcm device */
-	if ((err = snd_pcm_open(&handle, cmdOpt->playback_name, SND_PCM_STREAM_PLAYBACK, 0)) < 0)
+	if ((err = snd_pcm_open(&playback_handle, cmdOpt->playback_name, SND_PCM_STREAM_PLAYBACK, 0)) < 0)
 	{
 		printf("failed to open pcm device \"%s\" (%s)\n", cmdOpt->playback_name, snd_strerror(err));
 		return -1;
@@ -168,49 +168,49 @@ int sound_init(CmdLineOptions *cmdOpt)
 	}
 
 	/* Initialize the sound card parameter structure with default data */
-	if ((err = snd_pcm_hw_params_any(handle, params)) < 0) {
+	if ((err = snd_pcm_hw_params_any(playback_handle, params)) < 0) {
 		printf("failed to initialize hardware parameter structure (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
-	/* Set the access parameters of the sound card to interleaved access */
-	if ((err = snd_pcm_hw_params_set_access(handle, params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
+	/* Set the access parameters */
+	if ((err = snd_pcm_hw_params_set_access(playback_handle, params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
 		printf("cannot set access type (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
-	/* Set the data format of the sound card to signed 32-bit little endian */
-	if ((err = snd_pcm_hw_params_set_format(handle, params, SOUND_PCM_FORMAT)) < 0) {
+	/* Set the data format */
+	if ((err = snd_pcm_hw_params_set_format(playback_handle, params, SOUND_PCM_FORMAT)) < 0) {
 		printf("cannot set sample format (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
-	/* Set the sample rate of the sound card to 44100 */
-	if ((err = snd_pcm_hw_params_set_rate_near(handle, params, &cmdOpt->sample, 0)) < 0)
+	/* Set the sample rate of the sound card */
+	if ((err = snd_pcm_hw_params_set_rate_near(playback_handle, params, &cmdOpt->sample, 0)) < 0)
 	{
 		printf("cannot set sample format (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
 	/* Set the sound card channel */
-	if ((err = snd_pcm_hw_params_set_channels(handle, params, cmdOpt->channel)) < 0) {
+	if ((err = snd_pcm_hw_params_set_channels(playback_handle, params, cmdOpt->channel)) < 0) {
 		printf("cannot set channel count (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
 	frames = 1152;
-	if ((err = snd_pcm_hw_params_set_period_size_near(handle, params, &frames, 0)) < 0) {
+	if ((err = snd_pcm_hw_params_set_period_size_near(playback_handle, params, &frames, 0)) < 0) {
 		printf("cannot set period size (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
-	if ((err = snd_pcm_hw_params(handle, params)) < 0) {
+	if ((err = snd_pcm_hw_params(playback_handle, params)) < 0) {
 		printf("cannot set parameters (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
 	snd_pcm_hw_params_free(params);
-	if ((err = snd_pcm_prepare(handle)) < 0) {
+	if ((err = snd_pcm_prepare(playback_handle)) < 0) {
 		printf("cannont prepare audio interface for use (%s)\n", snd_strerror(err));
 		return -1;
 	}
@@ -427,12 +427,12 @@ int main(int argc, char *argv[])
 			pthread_cond_wait(&full, &lock);
 		}
 
-		if ((err = snd_pcm_writei(handle, OutputBuffer, 1151)) < 0) {
+		if ((err = snd_pcm_writei(playback_handle, OutputBuffer, 1151)) < 0) {
 			printf("write error: %s, errno: %d\n", snd_strerror(err), err);
 			if (err == -EPIPE)
 			{
 				int errb;
-				errb = snd_pcm_recover(handle, err, 0);
+				errb = snd_pcm_recover(playback_handle, err, 0);
 				if (errb < 0)
 				{
 					printf("failed to recover from underrun\n");
@@ -442,7 +442,7 @@ int main(int argc, char *argv[])
 				{
 					printf("recover\n");
 				}
-				snd_pcm_prepare(handle);
+				snd_pcm_prepare(playback_handle);
 			}
 		}
 

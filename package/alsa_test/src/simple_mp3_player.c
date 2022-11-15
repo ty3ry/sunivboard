@@ -1,8 +1,5 @@
 /**
- * https://lauri.xn--vsandi-pxa.com/2013/12/implementing-mp3-player.en.html
- * 
- * compile : 
- * $ gcc -o player player.c -lpulse -lpulse-simple -lmad -g
+ * file: simple mp3 player
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,15 +7,11 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <mad.h>
-// #include <pulse/simple.h>
-// #include <pulse/error.h>
 #include <alsa/asoundlib.h>
 
 
 #define SAMPLE_RATE 44100
 #define AMPLITUDE 10000
-
-//pa_simple *device = NULL;
 
 int ret = 1;
 int error;
@@ -40,14 +33,6 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Usage: %s [filename.mp3]", argv[0]);
         return 255;
     }
-
-    // Set up PulseAudio 16-bit 44.1kHz stereo output
-    // static const pa_sample_spec ss = { .format = PA_SAMPLE_S16LE, .rate = 44100, .channels = 2 };
-    // if (!(device = pa_simple_new(NULL, "MP3 player", PA_STREAM_PLAYBACK, NULL, "playback", &ss, NULL, NULL, &error))) {
-    //     printf("pa_simple_new() failed\n");
-    //     return 255;
-    // }
-    /**TODO: set up alsa */
    
     check(snd_pcm_open(&pcm_handle, "default", SND_PCM_STREAM_PLAYBACK, 0));
 
@@ -119,10 +104,6 @@ int main(int argc, char **argv) {
     mad_frame_finish(&mad_frame);
     mad_stream_finish(&mad_stream);
 
-    /**TODO: alsa close device */
-    // Close PulseAudio output
-    // if (device)
-    //     pa_simple_free(device);
     check(snd_pcm_drain(pcm_handle));
     check(snd_pcm_close(pcm_handle));
 
@@ -185,36 +166,6 @@ static enum mad_flow output1(void *data,
     OutputPtr = Output;
 
     return MAD_FLOW_CONTINUE;
-
-#if 0
-  unsigned int nchannels, nsamples;
-  mad_fixed_t const *left_ch, *right_ch;
-
-  /* pcm->samplerate contains the sampling frequency */
-
-  nchannels = pcm->channels;
-  nsamples  = pcm->length;
-  left_ch   = pcm->samples[0];
-  right_ch  = pcm->samples[1];
-
-  while (nsamples--) {
-    signed int sample;
-
-    /* output sample(s) in 16-bit signed little-endian PCM */
-
-    sample = scale(*left_ch++);
-    putchar((sample >> 0) & 0xff);
-    putchar((sample >> 8) & 0xff);
-
-    if (nchannels == 2) {
-      sample = scale(*right_ch++);
-      putchar((sample >> 0) & 0xff);
-      putchar((sample >> 8) & 0xff);
-    }
-  }
-
-  return MAD_FLOW_CONTINUE;
-#endif
 }
 
 void output(struct mad_header const *header, struct mad_pcm *pcm) {
@@ -232,11 +183,6 @@ void output(struct mad_header const *header, struct mad_pcm *pcm) {
             stream[(pcm->length-nsamples)*4 +3] = ((sample >> 8) & 0xff);
         }
 
-        /**TODO: set write ALSA PCM */
-        // if (pa_simple_write(device, stream, (size_t)1152*4, &error) < 0) {
-        //     fprintf(stderr, "pa_simple_write() failed: %s\n", pa_strerror(error));
-        //     return;
-        // }
         snd_pcm_writei(pcm_handle, stream, 1151);
 
     } else {

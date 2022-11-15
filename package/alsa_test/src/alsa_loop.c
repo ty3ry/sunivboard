@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
 
     if ((err = snd_pcm_open(&playback_handle, options.playback_name, SND_PCM_STREAM_PLAYBACK, 0)) < 0)
     {
-        fprintf(stderr, "Cannot open audio device %s (%s)\n", playback_name, snd_strerror(err));
+        fprintf(stderr, "Cannot open audio device %s (%s)\n", options.playback_name, snd_strerror(err));
         exit(1);
     }
 
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 
     if ((err = snd_pcm_open(&capture_handle, options.capture_name, SND_PCM_STREAM_CAPTURE, 0)) < 0)
     {
-        fprintf(stderr, "Cannot open audio device %s (%s)\n", capture_name, snd_strerror(err));
+        fprintf(stderr, "Cannot open audio device %s (%s)\n", options.capture_name, snd_strerror(err));
         exit(1);
     }
 
