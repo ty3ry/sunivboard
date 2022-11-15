@@ -1,5 +1,9 @@
+/**
+ * file: alsa_mad.c
+*/
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <mad.h>
 #include <id3tag.h>
@@ -11,10 +15,17 @@
 
 #define INPUT_BUFFER_SIZE (5 * 8192)
 #define OUTPUT_BUFFER_SIZE (1152 * 8)
-//#define OUTPUT_BUFFER_SIZE	(1152 * 4)
 
-#define SAMPLE_RATE 48000
-#define AMPLITUDE 10000
+#define	SOUND_PCM_FORMAT	(SND_PCM_FORMAT_S16_LE)
+
+typedef struct
+{
+    bool display_help;
+    char *path;
+	char *playback_name;
+    unsigned int sample;
+	int channel;
+} CmdLineOptions;
 
 snd_pcm_t *handle;
 snd_pcm_uframes_t frames;
@@ -25,98 +36,181 @@ int finished;
 int rate;
 unsigned char OutputBuffer[OUTPUT_BUFFER_SIZE];
 
-void check(int ret)
+
+void print_usage(char *prog_name)
 {
-	if (ret < 0)
-	{
-		fprintf(stderr, "error: %s (%d)\n", snd_strerror(ret), ret);
-		exit(1);
+    printf(
+        "Usage: %s [mp3_file] \n\n"
+        "Options:\n"
+        "    -h, --help          Display this message\n"
+		"    -d, --device        Set device card, if none set to \"default\" \n "
+        "    -p  --path PATH     mp3 file location path \n"
+		"    -c  channel    	 set channel \n"
+        "    -s  sampling_rate   sampling rate\n"
+        "\n", prog_name);
+}
+
+bool expect_int(char *str, int *out)
+{
+    int num = 0;
+    for (char *p = str; *p != 0; p++)
+    {
+        if (*p < '0' || *p > '9')
+        {
+            return false;
+        }
+        int new_val = num * 10 + (*p - '0');
+        if (new_val < num)
+        {
+            return false;
+        }
+        num = new_val;
+    }
+    if (out)
+    {
+        *out = num;
+    }
+    return true;
+}
+
+CmdLineOptions parse_command_line(int argc, char **argv)
+{
+    CmdLineOptions options = {
+        .sample = 44100,
+		.playback_name = "default",
+		.channel = 2
+    };
+
+	if (argc == 1)
+    {
+        print_usage(argv[0]);
+        exit(0);
+    }
+
+	for (int i = 1; i < argc; i++)
+    {
+		char *arg = argv[i];
+
+		if (strcmp(arg, "-h") == 0 || strcmp(arg, "--help") == 0)
+		{
+			options.display_help = true;
+		}
+		else if (strcmp(arg, "-d") == 0 || strcmp(arg, "--device") == 0)
+		{
+			if ( i + 1 == argc ) {
+				fprintf(stderr, "error: Argument to option '%s' missing\n", arg);
+                exit(1);
+			}
+			options.playback_name = argv[++i];
+		}
+		else if (strcmp(arg, "-s") == 0)
+		{
+			if (i + 1 == argc)
+            {
+                fprintf(stderr, "error: Argument to option '%s' missing\n", arg);
+                exit(1);
+            }
+			arg = argv[++i];
+			if ( !expect_int(arg, &options.sample) ) {
+				fprintf(stderr, "error: Sampling rate not valid\n", arg);
+                exit(1);
+			}
+		}
+		else if (strcmp(arg, "-p") == 0 || strcmp(arg, "--path") == 0)
+		{
+			if (i + 1 == argc)
+            {
+                fprintf(stderr, "error: Argument to option '%s' missing\n", arg);
+                exit(1);
+            }
+			options.path = argv[++i];
+		}
+		else if (strcmp(arg, "-c") == 0 || strcmp(arg, "--channel") == 0)
+		{
+			if (i + 1 == argc)
+            {
+                fprintf(stderr, "error: Argument to option '%s' missing\n", arg);
+                exit(1);
+            }
+			arg = argv[++i];
+			if ( !expect_int(arg, &options.channel) ) {
+				fprintf(stderr, "error: channel not valid, set 1 (mono) or 2 (stereo) channel \n", arg);
+                exit(1);
+			}
+		}
+		else
+        {
+            fprintf(stderr, "error: Unrecognized option: '%s'\n", arg);
+            exit(1);
+        }
 	}
+
+	return options;
 }
 
-static unsigned short MadFixedToUshort(mad_fixed_t Fixed)
-{
-	Fixed = Fixed >> (MAD_F_FRACBITS - 15);
-	return ((unsigned short)Fixed);
-}
 
-int snd_init(void)
+int sound_init(CmdLineOptions *cmdOpt)
 {
 	int err;
 	snd_pcm_hw_params_t *params;
-	printf("mad mp3 player %s\n", __TIME__);
 
 	/* open the pcm device */
-	if ((err = snd_pcm_open(&handle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0)
+	if ((err = snd_pcm_open(&handle, cmdOpt->playback_name, SND_PCM_STREAM_PLAYBACK, 0)) < 0)
 	{
-		printf("failed to open pcm device \"default\" (%s)\n", snd_strerror(err));
+		printf("failed to open pcm device \"%s\" (%s)\n", cmdOpt->playback_name, snd_strerror(err));
 		return -1;
 	}
 
 	/* alloc memory space for hardware parameter structure*/
-	if ((err = snd_pcm_hw_params_malloc(&params)) < 0)
-	{
+	if ((err = snd_pcm_hw_params_malloc(&params)) < 0){
 		printf("cannot allocate hardware parameter structure (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
 	/* Initialize the sound card parameter structure with default data */
-	if ((err = snd_pcm_hw_params_any(handle, params)) < 0)
-	{
+	if ((err = snd_pcm_hw_params_any(handle, params)) < 0) {
 		printf("failed to initialize hardware parameter structure (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
 	/* Set the access parameters of the sound card to interleaved access */
-	if ((err = snd_pcm_hw_params_set_access(handle, params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0)
-	{
+	if ((err = snd_pcm_hw_params_set_access(handle, params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
 		printf("cannot set access type (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
 	/* Set the data format of the sound card to signed 32-bit little endian */
-	//if ((err = snd_pcm_hw_params_set_format(handle, params, SND_PCM_FORMAT_S32_LE)) < 0) {
-	if ((err = snd_pcm_hw_params_set_format(handle, params, SND_PCM_FORMAT_S16_LE)) < 0) {
-	//if ((err = snd_pcm_hw_params_set_format(handle, params, SND_PCM_FORMAT_U16_LE)) < 0) {
+	if ((err = snd_pcm_hw_params_set_format(handle, params, SOUND_PCM_FORMAT)) < 0) {
 		printf("cannot set sample format (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
 	/* Set the sample rate of the sound card to 44100 */
-	rate = 44100;
-	if ((err = snd_pcm_hw_params_set_rate_near(handle, params, &rate, 0)) < 0)
+	if ((err = snd_pcm_hw_params_set_rate_near(handle, params, &cmdOpt->sample, 0)) < 0)
 	{
 		printf("cannot set sample format (%s)\n", snd_strerror(err));
 		return -1;
 	}
-	printf("rate: %d\n", rate);
 
-	/* Set the sound card channel to 2 */
-	int channels = 2;
-	if ((err = snd_pcm_hw_params_set_channels(handle, params, channels)) < 0)
-	{
+	/* Set the sound card channel */
+	if ((err = snd_pcm_hw_params_set_channels(handle, params, cmdOpt->channel)) < 0) {
 		printf("cannot set channel count (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
 	frames = 1152;
-	// frames = 512;
-	if ((err = snd_pcm_hw_params_set_period_size_near(handle, params, &frames, 0)) < 0)
-	{
+	if ((err = snd_pcm_hw_params_set_period_size_near(handle, params, &frames, 0)) < 0) {
 		printf("cannot set period size (%s)\n", snd_strerror(err));
 		return -1;
 	}
-	printf("frames: %d\n", frames);
 
-	if ((err = snd_pcm_hw_params(handle, params)) < 0)
-	{
+	if ((err = snd_pcm_hw_params(handle, params)) < 0) {
 		printf("cannot set parameters (%s)\n", snd_strerror(err));
 		return -1;
 	}
 
 	snd_pcm_hw_params_free(params);
-	if ((err = snd_pcm_prepare(handle)) < 0)
-	{
+	if ((err = snd_pcm_prepare(handle)) < 0) {
 		printf("cannont prepare audio interface for use (%s)\n", snd_strerror(err));
 		return -1;
 	}
@@ -131,7 +225,6 @@ int snd_init(void)
  * obtain any exceptional audio quality. It is therefore not recommended to
  * use this routine if high-quality output is desired.
  */
-
 static inline signed int scale(mad_fixed_t sample)
 {
     /* round */
@@ -209,7 +302,7 @@ void *decode(void *pthread_arg)
 
 		if (err = mad_frame_decode(&Frame, &Stream))
 		{
-			printf("decoding error: %x\n", Stream.error);
+			//printf("decoding error: %x\n", Stream.error);
 
 			if (MAD_RECOVERABLE(Stream.error))
 			{
@@ -284,41 +377,6 @@ void *decode(void *pthread_arg)
 		finished = 1;
 		pthread_mutex_unlock(&lock);
 		pthread_cond_signal(&full);
-		#if 0
-		/* Convert the decoded audio data into 16-bit data */
-		for (i = 0; i < Synth.pcm.length; i++)
-		{
-			// unsigned short Sample;
-			signed int Sample;
-			Sample = Synth.pcm.samples[0][i];
-			// Sample = MadFixedToUshort(Synth.pcm.samples[0][i]);
-			*(OutputPtr++) = (Sample & 0xff);
-			*(OutputPtr++) = (Sample >> 8);
-			*(OutputPtr++) = (Sample >> 16);
-			*(OutputPtr++) = (Sample >> 24);
-
-			if (MAD_NCHANNELS(&Frame.header) == 2)
-			{
-				Sample = Synth.pcm.samples[1][i];
-				// Sample = MadFixedToUshort(Synth.pcm.samples[1][i]);
-				*(OutputPtr++) = (Sample & 0xff);
-				*(OutputPtr++) = (Sample >> 8);
-				*(OutputPtr++) = (Sample >> 16);
-				*(OutputPtr++) = (Sample >> 24);
-			}
-
-			/* The output buffer is full */
-			if (OutputPtr >= OutputBufferEnd)
-			{
-				OutputPtr = OutputBuffer;
-				//printf("i=%d\n", i);
-				finished = 1;
-				pthread_mutex_unlock(&lock);
-				pthread_cond_signal(&full);
-			}
-		}
-		#endif
-
 
 	} while (1);
 
@@ -330,27 +388,29 @@ void *decode(void *pthread_arg)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
+	CmdLineOptions options = parse_command_line(argc, argv);
 	int mp3_fd;
 	int err = -1;
 	pthread_t decode_thread;
 
-	if (argc != 2) {
-        fprintf(stderr, "Usage: %s [filename.mp3]", argv[0]);
-        return 255;
-    }
+	if (options.display_help)
+	{
+		print_usage(argv[0]);
+		exit(0);
+	}
 
-	mp3_fd = open(argv[1], O_RDONLY);
+	mp3_fd = open(options.path, O_RDONLY);
 	if (!mp3_fd)
 	{
 		perror("failed to open file ");
 		return -1;
 	}
 
-	if (snd_init() < 0)
+	if (sound_init(&options) < 0)
 	{
-		printf("failed to init snd card\n");
+		printf("Failed to init sound card\n");
 		return -1;
 	}
 

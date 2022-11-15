@@ -124,7 +124,10 @@ CmdLineOptions parse_command_line(int argc, char **argv)
 {
     CmdLineOptions options = {
         .wave_type = "sine",
-        .freq = 440};
+        .freq = 440
+    };
+
+    
     if (argc == 1)
     {
         print_usage();

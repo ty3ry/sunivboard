@@ -14,6 +14,7 @@ define ALSA_TEST_BUILD_CMDS
 	$(TARGET_CC) -o $(@D)/simple_mp3_player $(@D)/simple_mp3_player.c -lasound -lmad
 	$(TARGET_CC) -o $(@D)/mad_alsa $(@D)/mad_alsa.c -lasound -lmad -lpthread -lid3tag
 	$(TARGET_CC) -o $(@D)/minimad $(@D)/minimad.c -lasound -lmad
+	$(TARGET_CC) -o $(@D)/alsa_loop $(@D)/alsa_loop.c -lasound
 endef
 
 define ALSA_TEST_INSTALL_TARGET_CMDS
@@ -23,6 +24,7 @@ define ALSA_TEST_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 755 $(@D)/simple_mp3_player $(TARGET_DIR)/usr/bin/simple_mp3_player
 	$(INSTALL) -D -m 755 $(@D)/mad_alsa $(TARGET_DIR)/usr/bin/mad_alsa
 	$(INSTALL) -D -m 755 $(@D)/minimad $(TARGET_DIR)/usr/bin/minimad
+	$(INSTALL) -D -m 755 $(@D)/alsa_loop $(TARGET_DIR)/usr/bin/alsa_loop
 endef
 
 $(eval $(generic-package))
