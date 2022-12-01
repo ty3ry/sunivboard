@@ -200,7 +200,7 @@ int sound_init(CmdLineOptions *cmdOpt)
 	}
 
 	/* Set the data format */
-	if ((err = snd_pcm_hw_params_set_format(playback_handle, params, SOUND_PCM_FORMAT)) < 0) {
+	if ((err = snd_pcm_hw_params_set_format(playback_handle, params, SND_PCM_FORMAT_S16_LE)) < 0) {
 		printf("cannot set sample format (%s)\n", snd_strerror(err));
 		return -1;
 	}
@@ -218,11 +218,6 @@ int sound_init(CmdLineOptions *cmdOpt)
 		return -1;
 	}
 
-	// frames = 1152;
-	// if ((err = snd_pcm_hw_params_set_period_size_near(playback_handle, params, &frames, 0)) < 0) {
-	// 	printf("cannot set period size (%s)\n", snd_strerror(err));
-	// 	return -1;
-	// }
 
 	if ((err = snd_pcm_hw_params(playback_handle, params)) < 0) {
 		printf("cannot set parameters (%s)\n", snd_strerror(err));
@@ -308,6 +303,8 @@ int main(int argc, char **argv)
         sample_count = file_size / sizeof(s16);
     }
 
+    //printf("file size : %d \n", file_size);
+
     do
     {
         int sample_index = 0;
@@ -321,30 +318,7 @@ int main(int argc, char **argv)
                 chunk_sample_count = (file_size - offset) / sizeof(s16);
             }
 
-            s16 *sample_to_write = (s16 *)((u8 *)samples + offset);
-            for (int i = 0; i < chunk_sample_count; i++)
-            {
-                f32 volume;
-                if (sample_index < fade_in_samples)
-                {
-                    volume = (sample_index) / (f32)fade_in_samples;
-                }
-                else if ((sample_count - sample_index) < fade_in_samples)
-                {
-                    volume = (sample_count - sample_index) / (f32)fade_in_samples;
-                }
-                else
-                {
-                    volume = 1.0f;
-                }
-                s16 *sample = sample_to_write + i;
-                f32 normalized_sample = *sample / (f32)32768;
-                normalized_sample *= volume;
-                *sample = (s16)clamp(normalized_sample * 32768, -32768, 32767);
-
-                sample_index++;
-            }
-
+            printf("chunk sample count : %d \n", chunk_sample_count);
             snd_pcm_writei(playback_handle, (u8 *)samples + offset, chunk_sample_count);
         }
     } while (1);

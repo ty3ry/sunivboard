@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <alsa/asoundlib.h>
 
-#define BUF_BYTES (1024 * 4 * 4)
+#define BUF_BYTES (256 * 4 * 4)
 
 #define LATENCY (250000)
 
@@ -23,7 +23,7 @@ typedef struct
     char *capture_name;     /* used for pcm capture */
 	int channel;
     int sample_rate;
-    unsigned int latency;   /* adjust latency */
+    unsigned long latency;   /* adjust latency */
 } CmdLineOptions;
 
 void print_usage(char *prog_name)
@@ -123,7 +123,12 @@ CmdLineOptions parse_command_line(int argc, char **argv)
                 fprintf(stderr, "error: Argument to option '%s' missing\n", arg);
                 exit(1);
             }
-			options.latency = argv[++i];
+
+            arg = argv[++i];
+			if ( !expect_int(arg, &options.latency) ) {
+				fprintf(stderr, "error: Sampling rate not valid\n", arg);
+                exit(1);
+			}
 		}
 		else if (strcmp(arg, "-c") == 0 || strcmp(arg, "--channel") == 0)
 		{

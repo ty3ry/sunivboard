@@ -19,6 +19,8 @@ define ALSA_TEST_BUILD_CMDS
 	$(TARGET_CC) -o $(@D)/alsa_capture $(@D)/alsa_capture.c -lasound
 	$(TARGET_CC) -o $(@D)/alsa_device_info $(@D)/alsa_device_info.c -lasound
 	$(TARGET_CC) -o $(@D)/playback_capture $(@D)/playback_capture.c -lasound
+	$(TARGET_CC) -o $(@D)/alsa_volume $(@D)/alsa_volume.c -lasound
+	$(TARGET_CC) -o $(@D)/latency_test $(@D)/latency_test.c -lasound
 endef
 
 define ALSA_TEST_INSTALL_TARGET_CMDS
@@ -33,6 +35,8 @@ define ALSA_TEST_INSTALL_TARGET_CMDS
 	$(INSTALL) -D -m 755 $(@D)/alsa_capture $(TARGET_DIR)/usr/bin/alsa_capture
 	$(INSTALL) -D -m 755 $(@D)/alsa_device_info $(TARGET_DIR)/usr/bin/alsa_device_info
 	$(INSTALL) -D -m 755 $(@D)/playback_capture $(TARGET_DIR)/usr/bin/playback_capture
+	$(INSTALL) -D -m 755 $(@D)/alsa_volume $(TARGET_DIR)/usr/bin/alsa_volume
+	$(INSTALL) -D -m 755 $(@D)/latency_test $(TARGET_DIR)/usr/bin/latency_test
 endef
 
 $(eval $(generic-package))

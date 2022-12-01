@@ -21,7 +21,6 @@ typedef float f32;
 
 #define SAMPLE_RATE 48000
 #define AMPLITUDE 10000
-#define	SOUND_PCM_FORMAT	(SND_PCM_FORMAT_S16_LE)
 
 snd_pcm_t *playback_handle;
 snd_pcm_uframes_t frames;
@@ -234,7 +233,7 @@ int sound_init(CmdLineOptions *cmdOpt)
 	}
 
 	/* Set the data format */
-	if ((err = snd_pcm_hw_params_set_format(playback_handle, params, SOUND_PCM_FORMAT)) < 0) {
+	if ((err = snd_pcm_hw_params_set_format(playback_handle, params, SND_PCM_FORMAT_S16_LE)) < 0) {
 		printf("cannot set sample format (%s)\n", snd_strerror(err));
 		return -1;
 	}
@@ -252,11 +251,11 @@ int sound_init(CmdLineOptions *cmdOpt)
 		return -1;
 	}
 
-	frames = 1152;
-	if ((err = snd_pcm_hw_params_set_period_size_near(playback_handle, params, &frames, 0)) < 0) {
-		printf("cannot set period size (%s)\n", snd_strerror(err));
-		return -1;
-	}
+	// frames = 1152;
+	// if ((err = snd_pcm_hw_params_set_period_size_near(playback_handle, params, &frames, 0)) < 0) {
+	// 	printf("cannot set period size (%s)\n", snd_strerror(err));
+	// 	return -1;
+	// }
 
 	if ((err = snd_pcm_hw_params(playback_handle, params)) < 0) {
 		printf("cannot set parameters (%s)\n", snd_strerror(err));

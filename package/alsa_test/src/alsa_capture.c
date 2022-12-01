@@ -12,7 +12,6 @@
 
 #define BUFSIZE 128
 #define RATE 44100
-#define	SOUND_PCM_FORMAT	(SND_PCM_FORMAT_S16_LE)
 
 FILE *fout = NULL;
 snd_pcm_t *capture_handle;
@@ -154,7 +153,7 @@ int sound_init(CmdLineOptions *cmdOpt)
 	}
 
 	/* Set the data format */
-	if ((err = snd_pcm_hw_params_set_format(capture_handle, params, SOUND_PCM_FORMAT)) < 0) {
+	if ((err = snd_pcm_hw_params_set_format(capture_handle, params, SND_PCM_FORMAT_S16_LE)) < 0) {
 		printf("cannot set sample format (%s)\n", snd_strerror(err));
 		return -1;
 	}

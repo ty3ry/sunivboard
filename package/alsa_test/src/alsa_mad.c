@@ -16,8 +16,6 @@
 #define INPUT_BUFFER_SIZE (5 * 8192)
 #define OUTPUT_BUFFER_SIZE (1152 * 8)
 
-#define	SOUND_PCM_FORMAT	(SND_PCM_FORMAT_S16_LE)
-
 typedef struct
 {
     bool display_help;
@@ -180,7 +178,7 @@ int sound_init(CmdLineOptions *cmdOpt)
 	}
 
 	/* Set the data format */
-	if ((err = snd_pcm_hw_params_set_format(playback_handle, params, SOUND_PCM_FORMAT)) < 0) {
+	if ((err = snd_pcm_hw_params_set_format(playback_handle, params, SND_PCM_FORMAT_S16_LE)) < 0) {
 		printf("cannot set sample format (%s)\n", snd_strerror(err));
 		return -1;
 	}

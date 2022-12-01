@@ -7,6 +7,7 @@ config BR2_PACKAGE_CSPOT
 	select BR2_PACKAGE_AVAHI
 	select BR2_PACKAGE_AVAHI_DAEMON
 	select BR2_PACKAGE_ALSA_LIB
+	select BR2_PACKAGE_AVAHI_LIBDNSSD_COMPATIBILITY
 
 	help
 	  A Spotify Connect player written in CPP targeting
