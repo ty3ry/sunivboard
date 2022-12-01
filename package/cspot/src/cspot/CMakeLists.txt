@@ -33,13 +33,11 @@ endif()
 # set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS}
 #     PROPERTIES GENERATED TRUE)
 
-#file(GLOB SOURCES "protobuf/*.cpp")
-include_directories(.)
+include_directories(protobuf)
 
 add_library(cspot STATIC ${SOURCES})
 # # PUBLIC to propagate includes from bell to cspot dependents
-# target_compile_definitions(bell PUBLIC PB_ENABLE_MALLOC)
-# target_compile_definitions(bell PUBLIC PB_FIELD_32BIT)
-
+target_compile_definitions(bell PUBLIC PB_ENABLE_MALLOC)
+target_compile_definitions(bell PUBLIC PB_FIELD_32BIT)
 target_link_libraries(cspot PUBLIC ${EXTRA_LIBS})
 target_include_directories(cspot PUBLIC "include" ${CMAKE_CURRENT_BINARY_DIR})
