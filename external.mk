@@ -1,1 +1,1 @@
-include $(sort $(wildcard $(BR2_EXTERNAL_SUNIVBOARD_PATH)/package/*/*.mk))
+include $(sort $(wildcard $(BR2_EXTERNAL_SBCBOARD_PATH)/package/*/*.mk))

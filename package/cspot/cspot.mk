@@ -6,7 +6,7 @@
 ################################################################################
 
 CSPOT_VERSION = v0.20.0
-CSPOT_SITE = $(BR2_EXTERNAL_SUNIVBOARD_PATH)/package/cspot/src
+CSPOT_SITE = $(BR2_EXTERNAL_SBCBOARD_PATH)/package/cspot/src
 CSPOT_SITE_METHOD = local
 CSPOT_DEPENDENCIES = alsa-lib avahi
 CSPOT_LICENSE = GPL-3.0+

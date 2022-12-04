@@ -10,7 +10,7 @@
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 
 / {
-	model = "Tiny SBC using allwinner fc100/200 series";
+	model = "Tiny SBC using allwinner FC100/200 series";
 	compatible = "licheepi,licheepi-nano", "allwinner,suniv-f1c100s",
 		     "allwinner,suniv";
 

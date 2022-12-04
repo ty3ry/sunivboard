@@ -1,2 +1,2 @@
-name: SUNIVBOARD
-desc: Tiny SBC using allwinner suniv
+name: SBCBOARD
+desc: Various SBC experiment using Buildroot
