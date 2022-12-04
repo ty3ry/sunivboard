@@ -7,6 +7,7 @@ static size_t vorbisReadCb(void *ptr, size_t size, size_t nmemb, ChunkedAudioStr
     size_t readSize = 0;
     while (readSize < nmemb * size && self->byteStream->position() < self->byteStream->size()) {
         readSize += self->byteStream->read((uint8_t *) ptr + readSize, (size * nmemb) - readSize);
+        CSPOT_LOG(debug, "Wait vorbisReadCb : %d ", readSize);
     }
     return readSize;
 }
