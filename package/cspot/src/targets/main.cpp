@@ -85,16 +85,18 @@ int main(int argc, char** argv)
             // Auth successful
             if (token.size() > 0)
             {
+                /** write credential file , at first init */
                 if (createdFromZeroconf) {
                     file->writeFile(credentialsFileName, blob->toJson());
                 }
-#ifdef CSPOT_ENABLE_ALSA_SINK
+// #ifdef CSPOT_ENABLE_ALSA_SINK
+                /**c_e: start pcm sink task */
                 auto audioSink = std::make_shared<ALSAAudioSink>();
-#elif defined(CSPOT_ENABLE_PORTAUDIO_SINK)
-                auto audioSink = std::make_shared<PortAudioSink>();
-#else
-                auto audioSink = std::make_shared<NamedPipeAudioSink>();
-#endif
+// #elif defined(CSPOT_ENABLE_PORTAUDIO_SINK)
+//                 auto audioSink = std::make_shared<PortAudioSink>();
+// #else
+//                 auto audioSink = std::make_shared<NamedPipeAudioSink>();
+// #endif
 
                 // @TODO Actually store this token somewhere
                 mercuryManager = std::make_shared<MercuryManager>(std::move(session));
@@ -105,7 +107,8 @@ int main(int argc, char** argv)
                 mercuryManager->reconnectedCallback = []() {
                     return spircController->subscribe();
                 };
-
+                /*c_e: execute just at first initialiation */
+                CSPOT_LOG(debug, "before handlequeue");
                 mercuryManager->handleQueue();
             }
 
@@ -123,6 +126,7 @@ int main(int argc, char** argv)
             blob = std::make_shared<LoginBlob>();
             blob->loadUserPass(args->username, args->password);
             createPlayerCallback(blob);
+            CSPOT_LOG(debug, "Login using username command line argment");
         }
         // Login using Blob
         else if (jsonData.length() > 0 && read_status)
@@ -130,6 +134,8 @@ int main(int argc, char** argv)
             blob = std::make_shared<LoginBlob>();
             blob->loadJson(jsonData);
             createPlayerCallback(blob);
+            /** c_e: not going here*/
+            CSPOT_LOG(debug, "Login using Blob");
         }
         // ZeroconfAuthenticator
         else
@@ -138,8 +144,12 @@ int main(int argc, char** argv)
             auto authenticator = std::make_shared<ZeroconfAuthenticator>(createPlayerCallback, httpServer);
             authenticator->registerHandlers();
             httpServer->listen();
+            /*c_e: not going here*/
+            CSPOT_LOG(debug, "Login using seroconfig");
         }
 
+        CSPOT_LOG(debug, "After some login related procesdure, going to while");
+        /*c_e: loop forever , not going here , except error occur */
         while (true);
     }
     catch (std::invalid_argument e)

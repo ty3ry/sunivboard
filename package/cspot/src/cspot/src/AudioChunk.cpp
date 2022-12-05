@@ -24,7 +24,8 @@ void AudioChunk::appendData(const std::vector<uint8_t> &data)
     this->decryptedData.insert(this->decryptedData.end(), data.begin(), data.end());
 }
 
-void AudioChunk::readData(uint8_t *target, size_t offset, size_t nbytes) {
+void AudioChunk::readData(uint8_t *target, size_t offset, size_t nbytes)
+{
     auto readPos = offset + nbytes;
     auto modulo = (readPos % 16);
     auto ivReadPos = readPos;
@@ -40,7 +41,6 @@ void AudioChunk::readData(uint8_t *target, size_t offset, size_t nbytes) {
         decryptedCount = ivReadPos;
     }
     memcpy(target, this->decryptedData.data() + offset, nbytes);
-
 }
 
 void AudioChunk::finalize()

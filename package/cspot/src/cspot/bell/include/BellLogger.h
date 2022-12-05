@@ -109,7 +109,7 @@ namespace bell
 #define BELL_LOG(type, ...)                                      \
     do                                                            \
     {                                                             \
-        bell::bellGlobalLogger->type(__FILE__, __LINE__, __VA_ARGS__); \
+        bell::bellGlobalLogger->type(__FILE__, __LINE__, __VA_ARGS__);  \
     } while (0)
 
 #endif

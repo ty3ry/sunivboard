@@ -5,9 +5,15 @@
 static size_t vorbisReadCb(void *ptr, size_t size, size_t nmemb, ChunkedAudioStream *self)
 {
     size_t readSize = 0;
+
     while (readSize < nmemb * size && self->byteStream->position() < self->byteStream->size()) {
         readSize += self->byteStream->read((uint8_t *) ptr + readSize, (size * nmemb) - readSize);
-        CSPOT_LOG(debug, "Wait vorbisReadCb : %d ", readSize);
+        if (self->count++ > 1000 ) {
+            CSPOT_LOG(debug, "Wait vorbisReadCb : %d ", readSize);
+            self->count = 0;
+            break;
+        }
+        usleep(1000);
     }
     return readSize;
 }
@@ -78,6 +84,7 @@ void ChunkedAudioStream::seekMs(uint32_t positionMs)
     CSPOT_LOG(debug, "--- Finished seeking!");
 }
 
+/**ce_ looped in Player Run_task() */
 void ChunkedAudioStream::startPlaybackLoop(uint8_t *pcmOut, size_t pcmOut_len)
 {
 
@@ -111,7 +118,6 @@ void ChunkedAudioStream::startPlaybackLoop(uint8_t *pcmOut, size_t pcmOut_len)
             else if (ret < 0)
             {
                 CSPOT_LOG(error, "An error has occured in the stream");
-
                 // Error in the stream
             }
             else
@@ -127,6 +133,8 @@ void ChunkedAudioStream::startPlaybackLoop(uint8_t *pcmOut, size_t pcmOut_len)
         }
     }
 
+    /** c_e: executed when track change or playback event */
+    CSPOT_LOG(debug, "Out of while -----");
     ov_clear(&vorbisFile);
     vorbisCallbacks = {};
     CSPOT_LOG(debug, "Track finished");

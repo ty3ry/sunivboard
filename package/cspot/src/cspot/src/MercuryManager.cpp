@@ -22,6 +22,8 @@ MercuryManager::MercuryManager(std::unique_ptr<Session> session): bell::Task("me
     this->audioKeySequence = 0;
     this->queue = std::vector<std::unique_ptr<Packet>>();
     queueSemaphore = std::make_unique<WrappedSemaphore>(200);
+    
+    this->isRunning = true; // c_e: https://github.com/feelfreelinux/cspot/issues/137
 
     this->session->shanConn->conn->timeoutHandler = [this]() {
         return this->timeoutHandler();
@@ -155,6 +157,8 @@ RECONNECT:
     }
 }
 
+/** Packet using pair of command and data */
+
 void MercuryManager::runTask()
 {
     std::scoped_lock lock(this->runningMutex);
@@ -175,6 +179,7 @@ void MercuryManager::runTask()
             this->reconnectedCallback();
             continue;
         }
+        /** handle command */
         if (static_cast<MercuryType>(packet->command) == MercuryType::PING) // @TODO: Handle time synchronization through ping
         {
             this->timeProvider->syncWithPingPacket(packet->data);
@@ -182,6 +187,7 @@ void MercuryManager::runTask()
             this->lastPingTimestamp = this->timeProvider->getSyncedTimestamp();
             this->session->shanConn->sendPacket(0x49, packet->data);
         }
+        /* handle data */
         else if (static_cast<MercuryType>(packet->command) == MercuryType::AUDIO_CHUNK_SUCCESS_RESPONSE)
         {
             this->lastRequestTimestamp = -1;
@@ -189,6 +195,7 @@ void MercuryManager::runTask()
         }
         else
         {
+            CSPOT_LOG(debug,"Another command and data, push queue");
             this->queue.push_back(std::move(packet));
             this->queueSemaphore->give();
         }
@@ -208,12 +215,14 @@ void MercuryManager::updateQueue() {
     if (queueSemaphore->twait() == 0) {
         if (this->queue.size() > 0)
         {
+            /*c_e: update first @ initialization , (login)*/
+            CSPOT_LOG(debug, "queue size = %d", this->queue.size());
             std::unique_ptr<Packet> packet = std::move(this->queue[0]);
             this->queue.erase(this->queue.begin());
             if(packet == nullptr){
                 return;
             }
-            CSPOT_LOG(debug, "Received packet with code %d of length %d", packet->command, packet->data.size());
+            CSPOT_LOG(debug, "Received packet with code 0x%02X of length %d", packet->command, packet->data.size());
             switch (static_cast<MercuryType>(packet->command))
             {
             case MercuryType::COUNTRY_CODE_RESPONSE:
@@ -285,6 +294,7 @@ void MercuryManager::handleQueue()
     while (isRunning)
     {
         this->updateQueue();
+        //CSPOT_LOG(debug, "Update queue");
     }
     
     std::scoped_lock lock(this->stopMutex);
