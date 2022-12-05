@@ -86,12 +86,13 @@ void Player::feedPCM(uint8_t *data, size_t len)
         }
     }
 
+    /**c_e: feed pcm data to audio sink (alsa)*/
     this->audioSink->feedPCMFrames(data, len);
 }
 
 void Player::runTask()
 {
-    uint8_t *pcmOut = (uint8_t *) malloc(4096 / 4);
+    uint8_t *pcmOut = (uint8_t *) malloc(4096 / 4); // size 1024
     std::scoped_lock lock(this->runningMutex);
     this->isRunning = true;
     while (isRunning)
@@ -111,6 +112,7 @@ void Player::runTask()
 
             delete currentTrack;
             currentTrack = nullptr;
+            CSPOT_LOG(debug, "nextTrack != nullPtr");
         }
         else
         {
@@ -153,6 +155,8 @@ void Player::handleLoad(std::shared_ptr<TrackReference> trackReference, std::fun
 
     pcmDataCallback framesCallback = [=](uint8_t *frames, size_t len) {
         this->feedPCM(frames, len);
+        //CSPOT_LOG(debug, "frames callback with size : %d ", len);
+        /**c_e: this block always execute periodically based on frames*/
      };
 
     this->nextTrackMutex.lock();

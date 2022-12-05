@@ -155,6 +155,8 @@ RECONNECT:
     }
 }
 
+/** Packet using pair of command and data */
+
 void MercuryManager::runTask()
 {
     std::scoped_lock lock(this->runningMutex);
@@ -175,6 +177,7 @@ void MercuryManager::runTask()
             this->reconnectedCallback();
             continue;
         }
+        /** handle command */
         if (static_cast<MercuryType>(packet->command) == MercuryType::PING) // @TODO: Handle time synchronization through ping
         {
             this->timeProvider->syncWithPingPacket(packet->data);
@@ -182,6 +185,7 @@ void MercuryManager::runTask()
             this->lastPingTimestamp = this->timeProvider->getSyncedTimestamp();
             this->session->shanConn->sendPacket(0x49, packet->data);
         }
+        /* handle data */
         else if (static_cast<MercuryType>(packet->command) == MercuryType::AUDIO_CHUNK_SUCCESS_RESPONSE)
         {
             this->lastRequestTimestamp = -1;
@@ -208,6 +212,8 @@ void MercuryManager::updateQueue() {
     if (queueSemaphore->twait() == 0) {
         if (this->queue.size() > 0)
         {
+            /*c_e: update first @ initialization , (login)*/
+            CSPOT_LOG(debug, "queue size = %d", this->queue.size());
             std::unique_ptr<Packet> packet = std::move(this->queue[0]);
             this->queue.erase(this->queue.begin());
             if(packet == nullptr){
@@ -285,6 +291,7 @@ void MercuryManager::handleQueue()
     while (isRunning)
     {
         this->updateQueue();
+        //CSPOT_LOG(debug, "Update queue");
     }
     
     std::scoped_lock lock(this->stopMutex);
