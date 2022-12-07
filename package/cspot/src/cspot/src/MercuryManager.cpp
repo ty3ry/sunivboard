@@ -22,6 +22,8 @@ MercuryManager::MercuryManager(std::unique_ptr<Session> session): bell::Task("me
     this->audioKeySequence = 0;
     this->queue = std::vector<std::unique_ptr<Packet>>();
     queueSemaphore = std::make_unique<WrappedSemaphore>(200);
+    
+    this->isRunning = true; // c_e: https://github.com/feelfreelinux/cspot/issues/137
 
     this->session->shanConn->conn->timeoutHandler = [this]() {
         return this->timeoutHandler();
@@ -193,6 +195,7 @@ void MercuryManager::runTask()
         }
         else
         {
+            CSPOT_LOG(debug,"Another command and data, push queue");
             this->queue.push_back(std::move(packet));
             this->queueSemaphore->give();
         }
@@ -219,7 +222,7 @@ void MercuryManager::updateQueue() {
             if(packet == nullptr){
                 return;
             }
-            CSPOT_LOG(debug, "Received packet with code %d of length %d", packet->command, packet->data.size());
+            CSPOT_LOG(debug, "Received packet with code 0x%02X of length %d", packet->command, packet->data.size());
             switch (static_cast<MercuryType>(packet->command))
             {
             case MercuryType::COUNTRY_CODE_RESPONSE:

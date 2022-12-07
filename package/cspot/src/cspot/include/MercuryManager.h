@@ -31,7 +31,7 @@ typedef std::function<void(std::unique_ptr<MercuryResponse>)> mercuryCallback;
 typedef std::function<void(bool, std::vector<uint8_t>)> audioKeyCallback;
 typedef std::function<void()> voidCallback;
 
-#define AUDIO_CHUNK_SIZE 0x20000
+#define AUDIO_CHUNK_SIZE 0x20000 // 0x20000
 
 enum class MercuryType : uint8_t
 {

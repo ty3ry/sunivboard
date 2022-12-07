@@ -1,0 +1,14 @@
+#!/usr/bin/bash
+
+echo "Start CSpot (Spotify Connect)"
+
+APP_NAME=cspotcli
+
+APP_NAME > /dev/null 2&>1 &
+
+if [ $? -ne 0 ]; then
+    echo "Cannot start $APP_NAME"
+else
+    echo "$APP_NAME start successfully"
+fi
+

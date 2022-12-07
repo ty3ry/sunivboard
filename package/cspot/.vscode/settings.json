@@ -52,6 +52,14 @@
         "ratio": "cpp",
         "stdexcept": "cpp",
         "streambuf": "cpp",
+<<<<<<< HEAD
         "bit": "cpp"
+=======
+        "bit": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "numbers": "cpp",
+        "list": "cpp"
+>>>>>>> 0a65d67d2b45ae9ad4506c7bde5643f204199e99
     }
 }

@@ -24,8 +24,8 @@ void AudioChunkManager::handleChunkData(std::vector<uint8_t> &data,
                                         bool failed) {
     auto audioPair = std::pair(data, failed);
     audioChunkDataQueue.push(audioPair);
-    /**c_e: handle each any data chunk*/
-    //CSPOT_LOG(debug, "handleChunkData");
+    /**c_e: handle each any data chunk (4098 in size)*/
+    //CSPOT_LOG(debug, "handleChunkData with size = %d", data.size());
 }
 
 void AudioChunkManager::failAllChunks() {
@@ -101,6 +101,7 @@ void AudioChunkManager::runTask() {
                             break;
 
                         default:
+                            CSPOT_LOG(debug, "another data chunk received");
                             auto actualData = std::vector<uint8_t>(
                                 data.begin() + 2, data.end());
                             chunk->appendData(actualData);

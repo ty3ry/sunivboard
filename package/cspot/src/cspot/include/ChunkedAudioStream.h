@@ -42,6 +42,7 @@ private:
     std::shared_ptr<MercuryManager> manager;
     std::vector<uint8_t> fileId;
     uint32_t startPositionMs;
+    
 
 public:
     ChunkedAudioStream(std::vector<uint8_t> fileId, std::vector<uint8_t> audioKey, uint32_t duration, std::shared_ptr<MercuryManager> manager, uint32_t startPositionMs, bool isPaused);
@@ -55,6 +56,8 @@ public:
     pcmDataCallback pcmCallback;
     std::shared_ptr<AudioSink> audioSink;
     WrappedMutex seekMutex;
+    /*c_e : add count to print debug */
+    int count = 0;
 
     std::vector<uint8_t> read(size_t bytes);
     void seekMs(uint32_t positionMs);
