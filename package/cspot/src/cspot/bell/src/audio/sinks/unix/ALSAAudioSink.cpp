@@ -1,13 +1,14 @@
 #include "ALSAAudioSink.h"
 
-ALSAAudioSink::ALSAAudioSink() : Task("", 0, 0, 0)
+ALSAAudioSink::ALSAAudioSink(std::string device) : Task("", 0, 0, 0)
 {
+       
     /* Open the PCM device in playback mode */
-    if (pcm = snd_pcm_open(&pcm_handle, PCM_DEVICE,
+    if (pcm = snd_pcm_open(&pcm_handle, device.c_str(),
                            SND_PCM_STREAM_PLAYBACK, 0) < 0)
     {
         printf("ERROR: Can't open \"%s\" PCM device. %s\n",
-               PCM_DEVICE, snd_strerror(pcm));
+               device.c_str(), snd_strerror(pcm));
     }
 
     /* Allocate parameters object and fill it with default values*/
@@ -32,6 +33,7 @@ ALSAAudioSink::ALSAAudioSink() : Task("", 0, 0, 0)
     unsigned int periodTime = 800;
     int dir = -1;
     snd_pcm_hw_params_set_period_time_near(pcm_handle, params, &periodTime, &dir);
+
     /* Write parameters */
     if (pcm = snd_pcm_hw_params(pcm_handle, params) < 0)
         printf("ERROR: Can't set harware parameters. %s\n", snd_strerror(pcm));

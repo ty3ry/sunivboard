@@ -108,7 +108,7 @@ private:
 class ALSAAudioSink : public AudioSink, public bell::Task
 {
 public:
-    ALSAAudioSink();
+    ALSAAudioSink(std::string device);
     ~ALSAAudioSink();
     void feedPCMFrames(const uint8_t *buffer, size_t bytes);
     void runTask();

@@ -10,6 +10,9 @@ std::shared_ptr<CommandLineArguments> CommandLineArguments::parse(int argc, char
         return std::make_shared<CommandLineArguments>("", "", false);
     }
     auto result = std::make_shared<CommandLineArguments>("", "", false);
+    /** set default alsa hardware */
+    result->alsa_device = "default";
+    
     for (int i = 1; i < argc; i++)
     {
         auto stringVal = std::string(argv[i]);
@@ -38,6 +41,22 @@ std::shared_ptr<CommandLineArguments> CommandLineArguments::parse(int argc, char
                 throw std::invalid_argument("expected path after the password flag");
             }
             result->password = std::string(argv[++i]);
+        }
+        else if (stringVal == "-d" || stringVal == "--device")
+        {
+            if (i >= argc - 1)
+            {
+                throw std::invalid_argument("expected path after the password flag");
+            }
+            result->alsa_device = std::string(argv[++i]);
+        }
+        else if (stringVal == "-n" || stringVal == "--name")
+        {
+            if (i >= argc - 1)
+            {
+                throw std::invalid_argument("expected path after the password flag");
+            }
+            result->spotify_device_name = std::string(argv[++i]);
         }
         else if (stringVal == "-b" || stringVal == "--bitrate")
         {

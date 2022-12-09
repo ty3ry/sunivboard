@@ -30,6 +30,9 @@ dtoverlay=krnbt=on
 
 # dtoverlay=disable-bt
 
+# enable i2c
+dtoverlay=i2c0
+
 dtparam=i2c_arm=on
 dtparam=i2c1=on
 

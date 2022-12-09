@@ -24,6 +24,16 @@ public:
      * Bitrate setting.
     */
     bool setBitrate = false;
+    /**
+     * alsa device setting
+    */
+   std::string alsa_device = "default";
+
+   /**
+    * spotify device name
+   */
+    std::string spotify_device_name = "";
+    
     AudioFormat bitrate;
     /**
      * Determines whether the help text should be printed.

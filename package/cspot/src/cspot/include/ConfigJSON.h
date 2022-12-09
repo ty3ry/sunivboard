@@ -13,7 +13,7 @@ private:
     std::string _jsonFileName;
 public:
     ConfigJSON(std::string jsonFileName, std::shared_ptr<FileHelper> file);
-    bool load();
+    bool load(std::string spotify_device_name);
     bool save();
 
     uint16_t volume;

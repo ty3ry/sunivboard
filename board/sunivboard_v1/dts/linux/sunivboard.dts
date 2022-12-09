@@ -153,6 +153,12 @@
 	status = "okay";
 };
 
+&i2c2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c2_pd_pins>;
+	status = "okay";
+};
+
 &codec {
 	allwinner,audio-routing =
 		"Headphone", "HP",

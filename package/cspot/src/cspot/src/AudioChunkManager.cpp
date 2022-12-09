@@ -101,10 +101,13 @@ void AudioChunkManager::runTask() {
                             break;
 
                         default:
-                            CSPOT_LOG(debug, "another data chunk received");
+                            /** execute when any data available and push to chunk */
                             auto actualData = std::vector<uint8_t>(
                                 data.begin() + 2, data.end());
                             chunk->appendData(actualData);
+                            //CSPOT_LOG(debug, "another data chunk received with size : %d", actualData.size());
+                            // send 4096 byte data chunk
+                            // and decode to vorbis decoder
                             break;
                         }
                     }

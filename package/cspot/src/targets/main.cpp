@@ -59,6 +59,8 @@ int main(int argc, char** argv)
             std::cout << "-u, --username            your spotify username\n";
             std::cout << "-p, --password            your spotify password, note that if you use facebook login you can set a password in your account settings\n";
             std::cout << "-b, --bitrate             bitrate (320, 160, 96)\n";
+            std::cout << "-d, --device              Set ALSA device\n";
+            std::cout << "-n, --name                Set Spotify device name\n";
             std::cout << "\n";
             std::cout << "ddd 2021\n";
             return 0;
@@ -70,13 +72,16 @@ int main(int argc, char** argv)
         {
             configMan->format = args->bitrate;
         }
+        /** set default name */
+        if (args->spotify_device_name == "")
+            args->spotify_device_name = "Polytron-Spotify-Dev";
 
-        if (!configMan->load())
+        if (!configMan->load(args->spotify_device_name))
         {
             CSPOT_LOG(error, "Config error");
         }
 
-        auto createPlayerCallback = [](std::shared_ptr<LoginBlob> blob) {
+        auto createPlayerCallback = [args](std::shared_ptr<LoginBlob> blob) {
             CSPOT_LOG(info, "Creating player");
             auto session = std::make_unique<Session>();
             session->connectWithRandomAp();
@@ -91,7 +96,7 @@ int main(int argc, char** argv)
                 }
 // #ifdef CSPOT_ENABLE_ALSA_SINK
                 /**c_e: start pcm sink task */
-                auto audioSink = std::make_shared<ALSAAudioSink>();
+                auto audioSink = std::make_shared<ALSAAudioSink>(args->alsa_device);
 // #elif defined(CSPOT_ENABLE_PORTAUDIO_SINK)
 //                 auto audioSink = std::make_shared<PortAudioSink>();
 // #else

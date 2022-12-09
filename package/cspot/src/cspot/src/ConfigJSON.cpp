@@ -10,7 +10,7 @@ ConfigJSON::ConfigJSON(std::string jsonFileName, std::shared_ptr<FileHelper> fil
     _jsonFileName = jsonFileName;
 }
 
-bool ConfigJSON::load()
+bool ConfigJSON::load(std::string spotify_device_name)
 {
     // Config filename check
     if(_jsonFileName.length() > 0)
@@ -58,7 +58,7 @@ bool ConfigJSON::load()
          // Config file not found or invalid
          // Set default values
          this->volume = 32767;
-         this->deviceName = defaultDeviceName;
+         this->deviceName = spotify_device_name;  // defaultDeviceName;
          this->format = AudioFormat_OGG_VORBIS_160;
       }
       return true;

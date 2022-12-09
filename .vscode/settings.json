@@ -18,6 +18,7 @@
         "mad.h": "c",
         "id3tag.h": "c",
         "mman.h": "c",
-        "atomic": "cpp"
+        "atomic": "cpp",
+        "*.tcc": "cpp"
     }
 }
