@@ -34,7 +34,7 @@ dtoverlay=krnbt=on
 dtoverlay=i2c0
 
 dtparam=i2c_arm=on
-dtparam=i2c1=on
+dtparam=i2c0=on
 
 disable_splash=1
 
