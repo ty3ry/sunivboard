@@ -19,6 +19,7 @@
         "id3tag.h": "c",
         "mman.h": "c",
         "atomic": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "condition_variable": "c"
     }
 }

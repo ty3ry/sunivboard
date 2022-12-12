@@ -1,0 +1,7 @@
+config BR2_PACKAGE_OLED
+	bool "oled display"
+
+	help
+	  packge to use and test oled SSD1306
+
+comment "Buildroot test package for oled SSD1306 driver"
