@@ -172,12 +172,17 @@
 	status = "okay";
 };
 
-&i2c2 {
-	pinctrl-name = "default";
-	pinctrl-0 = <&i2c2_pd_pins>;
+&i2c0 {
 	status = "okay";
 };
 
+&i2c1 {
+	status = "okay";
+};
+
+&i2c2 {
+	status = "okay";
+};
 
 &codec {
 	allwinner,audio-routing =

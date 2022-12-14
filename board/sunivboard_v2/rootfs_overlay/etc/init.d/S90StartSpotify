@@ -3,15 +3,17 @@
 echo "Start CSpot (Spotify Connect)"
 
 APPNAME=cspotcli
+SPOTIFY_ADDR=apresolve.spotify.com
 
 # check connection first
+echo "Wait established connection"
 until ping apresolve.spotify.com -c 1 | grep ttl
 do
     sleep .5
-    echo "Wait established connection"
+    #echo "Wait established connection"
 done
 
-cspotcli -d "plughw:0,0" > /dev/null 2&>1 &
+cspotcli -d "plughw:0,0" -n sunivboard_v2 > /dev/null 2&>1 &
 
 if [ $? -ne 0 ]; then
     echo "Cannot start $APPNAME"

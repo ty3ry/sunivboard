@@ -14,3 +14,4 @@ cp "${BR2_EXTERNAL_SBCBOARD_PATH}"/board/sunivboard_v2/rootfs_overlay/lib/firmwa
 # this firmware always selected if config BR2_PACKAGE_LINUX_FIRMWARE_BRCM_BCM43XX enabled
 # remove to save space in limited spi flash
 rm -rf "${TARGET_DIR}"/lib/firmware/cypress/*
+# rm -rf "${TARGET_DIR}"/etc/init.d/S90StartSpotify

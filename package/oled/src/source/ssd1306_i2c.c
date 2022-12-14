@@ -37,7 +37,7 @@ All text above, and the splash screen below must be included in any redistributi
 #include <linux/i2c-dev.h>
 #include <linux/i2c.h>
 #include <sys/ioctl.h>
-const char *i2c_fname = "/dev/i2c-0";
+const char *i2c_fname = "/dev/i2c-1";
 #endif
 
 
@@ -297,7 +297,7 @@ int i2c_read(unsigned char slave_addr, unsigned char reg, unsigned char *result)
 }
 
 // Init SSD1306
-void ssd1306_begin(unsigned int vccstate, unsigned int i2caddr)
+void ssd1306_begin(unsigned int vccstate, unsigned int i2caddr, char *i2c_device)
 {
 	// I2C Init
 
@@ -306,7 +306,7 @@ void ssd1306_begin(unsigned int vccstate, unsigned int i2caddr)
 #ifdef I2C_USE_WIRINGPI
 	i2c_fd = wiringPiI2CSetup(i2caddr);
 #else
-	i2c_fd = open(i2c_fname, O_RDWR);
+	i2c_fd = open(i2c_device, O_RDWR);
 #endif // I2C_USE_WIRINGPI
 
 	if (i2c_fd < 0) {
@@ -834,8 +834,8 @@ void ssd1306_fillRect(int x, int y, int w, int h, int fillcolor)
 		ssd1306_drawFastHLine(x, y + i, w, fillcolor);
 }
 
-int textsize = 1;
-int wrap = 1;
+int textsize = 2;
+int wrap = 0;
 
 void ssd1306_setTextSize(int s)
 {
