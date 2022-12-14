@@ -1,6 +1,6 @@
 --- a/arch/arm/boot/dts/suniv-f1c100s.dtsi	2022-12-11 16:14:08.135398163 +0700
-+++ b/arch/arm/boot/dts/suniv-f1c100s.dtsi	2022-12-11 16:19:46.276188568 +0700
-@@ -190,6 +190,31 @@
++++ b/arch/arm/boot/dts/suniv-f1c100s.dtsi	2022-12-14 19:45:12.363485479 +0700
+@@ -190,6 +190,36 @@
  				pins = "PF0", "PF1", "PF2", "PF3", "PF4", "PF5";
  				function = "mmc0";
  			};
@@ -8,31 +8,36 @@
 +			i2c0_pe_pins: i2c0-pe-pins {
 +				pins = "PE11", "PE12";
 +				function = "i2c0";
++				bias-pull-up;
 +			};
 +
 +			i2c0_pd_pins: i2c0-pd-pins {
 +				pins = "PD0", "PD12";
 +				function = "i2c0";
++				bias-pull-up;
 +			};
 +
 +			i2c1_pd_pins: i2c1-pd-pins {
 +				pins = "PD5", "PD6";
 +				function = "i2c1";
++				bias-pull-up;
 +			};
 +
 +			i2c2_pd_pins: i2c2-pd-pins {
 +				pins = "PD15", "PD16";
 +				function = "i2c2";
++				bias-pull-up;
 +			};
 +
 +			i2c2_pe_pins: i2c2-pe-pins {
 +				pins = "PE0", "PE1";
 +				function = "i2c2";
++				bias-pull-up;
 +			};
  		};
  
  		timer@1c20c00 {
-@@ -249,6 +274,41 @@
+@@ -249,6 +279,45 @@
  			status = "disabled";
  		};
  
@@ -55,6 +60,8 @@
 +			interrupts = <8>;
 +			clocks = <&ccu CLK_BUS_I2C1>;
 +			resets = <&ccu RST_BUS_I2C1>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&i2c1_pd_pins>;
 +			status = "disabled";
 +			#address-cells = <1>;
 +			#size-cells = <0>;
@@ -66,6 +73,8 @@
 +			interrupts = <9>;
 +			clocks = <&ccu CLK_BUS_I2C2>;
 +			resets = <&ccu RST_BUS_I2C2>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&i2c2_pd_pins>;
 +			status = "disabled";
 +			#address-cells = <1>;
 +			#size-cells = <0>;

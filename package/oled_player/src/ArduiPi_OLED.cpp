@@ -43,7 +43,7 @@ redistribution
 #include <linux/i2c.h>
 #include <sys/ioctl.h>
 
-#define	I2C_DEVICE 	"/dev/i2c-0"
+#define	I2C_DEVICE 	"/dev/i2c-1"
 
 const char *oled_type_str[] = {"Adafruit SPI 128x32", "Adafruit SPI 128x64",
 							   "Adafruit I2C 128x32", "Adafruit I2C 128x64",
@@ -167,31 +167,6 @@ inline void ArduiPi_OLED::fastI2Cwrite(uint8_t d)
 	// cm2835_spi_transfer(d);
 }
 
-int i2c_write(unsigned char slave_addr, unsigned char reg, unsigned char data) {
-    // int retval;
-    // unsigned char outbuf[2];
-
-    // struct i2c_msg msgs[1];
-    // struct i2c_rdwr_ioctl_data msgset[1];
-
-    // outbuf[0] = reg;
-    // outbuf[1] = data;
-
-    // msgs[0].addr = slave_addr;
-    // msgs[0].flags = 0;
-    // msgs[0].len = 2;
-    // msgs[0].buf = outbuf;
-
-    // msgset[0].msgs = msgs;
-    // msgset[0].nmsgs = 1;
-
-    // if (ioctl(i2c_fd, I2C_RDWR, &msgset) < 0) {
-    //     perror("ioctl(I2C_RDWR) in i2c_write");
-    //     return -1;
-    // }
-
-    // return 0;
-}
 
 // Read the given I2C slave device's register and return the read value in `*result`:
 int i2c_read(unsigned char slave_addr, unsigned char reg, unsigned char *result) {
@@ -231,32 +206,37 @@ inline void ArduiPi_OLED::fastSPIwrite(char *tbuf, uint32_t len)
 {
 	// bcm2835_spi_writenb(tbuf, len); /*c_e: disable*/
 }
-inline void ArduiPi_OLED::fastI2Cwrite(char *tbuf, uint32_t len)
+inline void ArduiPi_OLED::fastI2Cwrite(unsigned char *tbuf, uint32_t len)
 {
-	// bcm2835_i2c_alt_write(tbuf, len); /*c_e: disable*/
-	// int retval;
-    // unsigned char outbuf[2];
+	int retval;
 
-    // struct i2c_msg msgs[1];
-    // struct i2c_rdwr_ioctl_data msgset[1];
+	if (i2c_fd < 0) {
+		fprintf(stderr, "ssd1306_i2c : Unable to initialise I2C:\n");
+		return;
+	}
 
-    // outbuf[0] = reg;
-    // outbuf[1] = data;
+    struct i2c_msg msgs[1];
+    struct i2c_rdwr_ioctl_data msgset[1];
+	
+	//printf("i2c address : 0x%02X \n", _i2c_addr);
+    msgs[0].addr = _i2c_addr;
+    msgs[0].flags = 0; /* write */
+    msgs[0].len = len;
+    msgs[0].buf = tbuf;
 
-    // msgs[0].addr = slave_addr;
-    // msgs[0].flags = 0;
-    // msgs[0].len = 2;
-    // msgs[0].buf = outbuf;
+#if 0
+	printf("Write: ");
+	for(int i = 0; i < len; i++) {
+		printf("0x%02x ", msgs[0].buf[i]);
+	}
+	printf("\n");
+#endif
+    msgset[0].msgs = msgs;
+    msgset[0].nmsgs = 1;
 
-    // msgset[0].msgs = msgs;
-    // msgset[0].nmsgs = 1;
-
-    // if (ioctl(i2c_fd, I2C_RDWR, &msgset) < 0) {
-    //     perror("ioctl(I2C_RDWR) in i2c_write");
-    //     return -1;
-    // }
-
-    // return 0;
+    if (ioctl(i2c_fd, I2C_RDWR, &msgset) < 0) {
+        perror("ioctl(I2C_RDWR) in i2c_write");
+    }
 }
 
 // the most basic function, set a single pixel
@@ -368,6 +348,7 @@ boolean ArduiPi_OLED::select_oled(uint8_t OLED_TYPE, int8_t i2c_addr)
 	_i2c_addr = 0x00;
 	oled_type = OLED_TYPE;
 
+	printf("Select oled : %d \n", OLED_TYPE);
 	// default OLED are using internal boost VCC converter
 	vcc_type = SSD_Internal_Vcc;
 
@@ -480,11 +461,9 @@ boolean ArduiPi_OLED::init_spi(int8_t DC, int8_t RST, int8_t CS,
 }
 
 // initializer for I2C - we only indicate the reset pin and OLED type !
-boolean ArduiPi_OLED::init_i2c(int8_t RST, uint8_t OLED_TYPE, int8_t i2c_addr,
-							   int i2c_bus)
+boolean ArduiPi_OLED::init_i2c(uint8_t OLED_TYPE, int8_t i2c_addr)
 {
-	dc = cs = -1; // DC and chip Select do not exist in I2C
-	rst = RST;
+	printf("open device : %s \n", I2C_DEVICE);
 
 	/** init i2c device */
 	i2c_fd = open(I2C_DEVICE, O_RDWR);
@@ -493,26 +472,9 @@ boolean ArduiPi_OLED::init_i2c(int8_t RST, uint8_t OLED_TYPE, int8_t i2c_addr,
 		return false;
 	}
 
-
 	// Select OLED parameters
 	if (!select_oled(OLED_TYPE, i2c_addr))
 		return false;
-
-/** TODO: init i2c hw*/
-#if 0 /*c_e: disable*/
-  // Init & Configure Raspberry PI I2C
-  if (bcm2835_i2c_alt_begin(i2c_bus) == 0)
-    return false;
-
-  bcm2835_i2c_alt_setSlaveAddress(_i2c_addr);
-
-  // Set clock to 400 KHz
-  // does not seem to work, will check this later
-  // bcm2835_i2c_alt_set_baudrate(400000);
-
-  // Setup reset pin direction as output
-  bcm2835_gpio_fsel(rst, BCM2835_GPIO_FSEL_OUTP);
-#endif
 
 	return (true);
 }
@@ -524,20 +486,6 @@ void ArduiPi_OLED::close(void)
 		free(poledbuff);
 
 	poledbuff = NULL;
-
-/** TODO: close communication protocol */
-#if 0 /*c_e: disable*/
-  // Release Raspberry SPI
-  if (isSPI())
-    bcm2835_spi_end();
-
-  // Release Raspberry I2C
-  if (isI2C())
-    bcm2835_i2c_alt_end();
-
-  // Release Raspberry I/O control
-  bcm2835_close();
-#endif
 }
 
 void ArduiPi_OLED::reset_offset()
@@ -554,31 +502,7 @@ void ArduiPi_OLED::begin(void)
 	uint8_t precharge;
 
 	reset(oled_width, oled_height);
-
-	/** TODO: reset gpio */
-#if 0 /*c_e: disable*/
-  // Setup reset pin direction (used by both SPI and I2C)
-  bcm2835_gpio_fsel(rst, BCM2835_GPIO_FSEL_OUTP);
-  bcm2835_gpio_write(rst, HIGH);
-#endif
-
-	// VDD (3.3V) goes high at start, lets just chill for a ms
-	usleep(1000);
-
-/** TODO: reset low */
-#if 0 /*c_e: disable*/
-  // bring reset low
-  bcm2835_gpio_write(rst, LOW);
-#endif
-
-	// wait 10ms
-	usleep(10000);
-
-	/** TODO: brign out of reset */
-#if 0 /*c_e: disable*/
-  // bring out of reset
-  bcm2835_gpio_write(rst, HIGH);
-#endif
+	printf("display begin\n");
 
 	// depends on OLED type configuration
 	if (oled_height == 32)
@@ -811,19 +735,19 @@ void ArduiPi_OLED::invertDisplay(uint8_t i)
 
 void ArduiPi_OLED::sendCommand(uint8_t c)
 {
-	char buff[2];
+	unsigned char buff[2];
 
 	// Clear D/C to switch to command mode
 	buff[0] = SSD_Command_Mode;
 	buff[1] = c;
 
 	// Write Data on I2C
-	fastI2Cwrite(buff, sizeof(buff));
+	fastI2Cwrite(buff, 2);
 }
 
 void ArduiPi_OLED::sendCommand(uint8_t c0, uint8_t c1)
 {
-	char buff[3];
+	unsigned char buff[3];
 	buff[1] = c0;
 	buff[2] = c1;
 
@@ -836,7 +760,7 @@ void ArduiPi_OLED::sendCommand(uint8_t c0, uint8_t c1)
 
 void ArduiPi_OLED::sendCommand(uint8_t c0, uint8_t c1, uint8_t c2)
 {
-	char buff[4];
+	unsigned char buff[4];
 
 	buff[1] = c0;
 	buff[2] = c1;
@@ -846,7 +770,7 @@ void ArduiPi_OLED::sendCommand(uint8_t c0, uint8_t c1, uint8_t c2)
 	buff[0] = SSD_Command_Mode;
 
 	// Write Data on I2C
-	fastI2Cwrite(buff, sizeof(buff));
+	fastI2Cwrite(buff, 4);
 }
 
 // startscrollright
@@ -944,14 +868,14 @@ void ArduiPi_OLED::stopscroll(void) { sendCommand(SSD_Deactivate_Scroll); }
 
 void ArduiPi_OLED::sendData(uint8_t c)
 {
-	char buff[2];
+	unsigned char buff[2];
 
 	// Setup D/C to switch to data mode
 	buff[0] = SSD_Data_Mode;
 	buff[1] = c;
 
 	// Write on i2c
-	fastI2Cwrite(buff, sizeof(buff));
+	fastI2Cwrite(buff, 2);
 }
 
 void ArduiPi_OLED::display(void)
@@ -974,7 +898,7 @@ void ArduiPi_OLED::display(void)
 	// pointer to OLED data buffer
 	uint8_t *p = poledbuff;
 
-	char buff[17];
+	unsigned char buff[17];
 	uint8_t x;
 
 	// Setup D/C to switch to data mode

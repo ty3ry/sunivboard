@@ -246,7 +246,7 @@ bool init_display(ArduiPi_OLED &display, int oled, unsigned char i2c_addr,
 {
 
 		// I2C change parameters to fit to your LCD
-	if (!display.init_i2c(reset_gpio, oled, i2c_addr, i2c_bus))
+	if (!display.init_i2c(oled, i2c_addr))
 		return false;
 
 	display.begin();

@@ -33,7 +33,7 @@
 class connection_info {
 private:
   std::string if_name;
-  std::string ip_addr;
+  std::string ip_addr = "192.168.1.101";
   int type;
   int link;
 
@@ -60,9 +60,20 @@ struct spect_graph {
   }
 };
 
+class mpd_info {
+private:
+  std::string _title;
+  std::string _origin;
+public:
+  std::string get_title() const { return _title; }
+  std::string get_origin() const { return _origin; }
+  void set_title(std::string title) { _title = title; }
+  void set_origin(std::string origin) { _origin = origin; }
+};
+
 struct display_info {
   spect_graph spect;
-  //mpd_info status; /*c_e: disable*/
+  mpd_info status; /*c_e: disable*/
   Counter text_change;
   std::vector<double> scroll;
   int clock_format;
@@ -79,9 +90,10 @@ inline void display_info::update_from(const display_info &new_info)
   // bool changed = (status.get_title() != new_info.status.get_title() ||
   //                 status.get_origin() != new_info.status.get_origin() ||
   //                 status.get_state() != new_info.status.get_state());
-  // *this = new_info;
-  // if (changed)
-  //   text_change.reset();
+  bool changed = 0;
+  *this = new_info;
+  if (changed)
+    text_change.reset();
 }
 
 #endif // DISPLAY_INFO_H
