@@ -209,12 +209,6 @@ inline void ArduiPi_OLED::fastSPIwrite(char *tbuf, uint32_t len)
 inline void ArduiPi_OLED::fastI2Cwrite(unsigned char *tbuf, uint32_t len)
 {
 	int retval;
-
-	if (i2c_fd < 0) {
-		fprintf(stderr, "ssd1306_i2c : Unable to initialise I2C:\n");
-		return;
-	}
-
     struct i2c_msg msgs[1];
     struct i2c_rdwr_ioctl_data msgset[1];
 	
@@ -224,13 +218,6 @@ inline void ArduiPi_OLED::fastI2Cwrite(unsigned char *tbuf, uint32_t len)
     msgs[0].len = len;
     msgs[0].buf = tbuf;
 
-#if 0
-	printf("Write: ");
-	for(int i = 0; i < len; i++) {
-		printf("0x%02x ", msgs[0].buf[i]);
-	}
-	printf("\n");
-#endif
     msgset[0].msgs = msgs;
     msgset[0].nmsgs = 1;
 

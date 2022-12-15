@@ -43,6 +43,8 @@
 #include <string>
 #include <vector>
 
+#include <fcntl.h>
+
 using std::string;
 using std::vector;
 
@@ -134,12 +136,12 @@ public:
 void OledOpts::usage()
 {
 	fprintf(stdout, R"(
-Usage: %s -o oled_type [options] [input_file]
+		Usage: %s -o oled_type [options] [input_file]
 
-Display information about an MPD-based player on an OLED screen
+		Display information about an MPD-based player on an OLED screen
 
-Options
-%s)",
+		Options
+		%s)",
 			get_program_name().c_str(), help_ver_text);
 
 	fprintf(
@@ -464,6 +466,8 @@ void draw_spect_display(ArduiPi_OLED &display, const display_info &disp_info)
 {
 	const int H = 8; // character height
 	const int W = 6; // character width
+	static float progCount = 0.1;
+
 	draw_spectrum(display, 0, 0, SPECT_WIDTH, 32, disp_info.spect);
 	// draw_connection(display, 128 - 2 * W, 0, disp_info.conn); /*c_e: disabled */
 	draw_triangle_slider(display, 128 - 5 * W, 1, 11, 6, /*disp_info.status.get_volume() c_e: disable*/ 60);
@@ -484,8 +488,12 @@ void draw_spect_display(ArduiPi_OLED &display, const display_info &disp_info)
 	draw_text_scroll(display, 0, 6 * H, 20, disp_info.status.get_title(),
 					 scroll_title, disp_info.text_change.secs());
 
+	progCount += 0.01;
+	if (progCount >= 1)
+		progCount = 0;
+
 	draw_solid_slider(display, 0, 7 * H + 6, 128, 2,
-					  100 * /*disp_info.status.get_progress() c_e: disable */ 0.5);
+					  100 * /*disp_info.status.get_progress() c_e: disable */ progCount);
 }
 
 void draw_display(ArduiPi_OLED &display, const display_info &disp_info)
@@ -534,24 +542,26 @@ bool get_invert(double period)
 
 int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 {
-	opts.message("start idle loop!");
-
 	const double update_sec =
 		1 / (0.9 * opts.framerate); // default update freq just under framerate
 	const long select_usec =
 		update_sec * 1100000; // slightly longer, but still less than framerate
 	Timer timer;
 
-	opts.message("Display info constructor");
 	display_info disp_info;
 	disp_info.scroll = opts.scroll;
 	disp_info.clock_format = opts.clock_format;
 	disp_info.date_format = opts.date_format;
 	disp_info.pause_screen = opts.pause_screen;
-	opts.message("spect init!");
 	disp_info.spect.init(opts.bars, opts.gap);
 	// disp_info.status.set_player(opts.player); /*c_e: disabled */
 	//disp_info.status.init(); /*c_e: disabled */
+
+	FILE *fRandom = fopen("/dev/random", "r");
+	if (fRandom < 0) {
+		fprintf(stderr, "something error when open random device\n");
+		return 1;
+	}
 
 	disp_info.status.set_title("Entahlah ini judulnya apa , mungkin kamu tau ?");
 	disp_info.status.set_origin("Spotify");
@@ -566,7 +576,6 @@ int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 		return 1;
 	}
 
-	opts.message("mutex init");
 	if (pthread_mutex_init(&disp_info_lock, NULL) != 0)
 	{
 		fprintf(stderr, "error: could not create pthread mutex\n");
@@ -578,7 +587,6 @@ int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 	FILE *fifo_file = nullptr;
 
 	int zero_read_cnt = 0; // number of consecutive reads of zero bytes
-	opts.message("going to main loop");
 	while (true)
 	{
 		int num_bars_read = 0;
@@ -598,9 +606,13 @@ int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 			{
 				do
 				{
+					printf("read spectrum height \n");
 					num_bars_read =
 						fread(&disp_info.spect.heights[0], sizeof(unsigned char),
-							  disp_info.spect.heights.size(), fifo_file);
+							  disp_info.spect.heights.size(), fRandom);
+					
+					// for (int i =0 ;i < 16; i++)
+					// 	disp_info.spect.heights[i] = 255;
 
 					FD_ZERO(&set);
 					FD_SET(fifo_fd, &set);
@@ -610,18 +622,20 @@ int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 			}
 		}
 
+		fread(&disp_info.spect.heights[0], sizeof(unsigned char), disp_info.spect.heights.size(), fRandom);
+
 		if (num_bars_read == 0)
 			zero_read_cnt++;
 		else
 			zero_read_cnt = 0;
 
 		// Clear spectrum data if no data available or music not playing
-		if (zero_read_cnt > 1 || /*disp_info.status.get_state() != MPD_STATE_PLAY*/ /*c_e: disabled */ 1)
-		{
-			std::fill(disp_info.spect.heights.begin(), disp_info.spect.heights.end(),
-					  0);
-			usleep(0.1 * 1000000); // 0.1 sec delay, don't idle too fast if no need
-		}
+		// if (zero_read_cnt > 1 || /*disp_info.status.get_state() != MPD_STATE_PLAY*/ /*c_e: disabled */ 0)
+		// {
+		// 	std::fill(disp_info.spect.heights.begin(), disp_info.spect.heights.end(),
+		// 			  0);
+		// 	usleep(0.1 * 1000000); // 0.1 sec delay, don't idle too fast if no need
+		// }
 
 		// Update display if necessary
 		if (timer.finished() || num_bars_read)
@@ -660,7 +674,6 @@ int main(int argc, char **argv)
 	// Set locale to allow iconv transliteration to US-ASCII
 	setlocale(LC_CTYPE, "C.UTF-8");
 	OledOpts opts;
-	opts.usage();
 	//opts.process_command_line(argc, argv);
 
 	/* init oled parameter */
@@ -669,7 +682,6 @@ int main(int argc, char **argv)
 	opts.i2c_bus = 0x01; // set to bus 1
 	opts.invert = 0;
 
-	opts.message("Going to Init display");
 	if (!display.init_i2c(OLED_ADAFRUIT_I2C_128x64, 0x3c))
 		return false;
 
@@ -677,14 +689,6 @@ int main(int argc, char **argv)
 
 	init_signals();
 	atexit(cleanup);
-
-	// display_info disp_info;
-	// disp_info.clock_format = 0;
-	// disp_info.date_format = 1;
-	// disp_info.conn.TYPE_WIFI;
-	// disp_info.conn.get_ip_addr();
-	// draw_display(display, disp_info);
-	// display.display();
 	
 	int loop_ret = start_idle_loop(display, opts);
 
