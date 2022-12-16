@@ -73,14 +73,14 @@ public:
 
 struct display_info {
   spect_graph spect;
-  mpd_info status; /*c_e: disable*/
+  mpd_info status;
   Counter text_change;
   std::vector<double> scroll;
   int clock_format;
   int date_format;
   char pause_screen;
-  connection_info conn; /*c_e: disable*/
-  //void conn_init() { conn.init(); } /*c_e: disable*/
+  connection_info conn; 
+  void conn_init() { conn.init(); } 
   void update_from(const display_info &new_info);
 };
 

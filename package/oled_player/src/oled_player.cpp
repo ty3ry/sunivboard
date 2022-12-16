@@ -456,7 +456,7 @@ void draw_clock(ArduiPi_OLED &display, const display_info &disp_info)
 	display.clearDisplay();
 	// const int H = 8;  // character height
 	const int W = 6; // character width
-	draw_text(display, 22, 0, 16, /*disp_info.conn.get_ip_addr()*/"192.168.1.101"); /*c_e: disabled */
+	draw_text(display, 22, 0, 16, disp_info.conn.get_ip_addr());
 	draw_connection(display, 128 - 2 * W, 0, disp_info.conn);
 	draw_time(display, 4, 16, 4, disp_info.clock_format);
 	draw_date(display, 32, 56, 1, disp_info.date_format);
@@ -469,7 +469,7 @@ void draw_spect_display(ArduiPi_OLED &display, const display_info &disp_info)
 	static float progCount = 0.1;
 
 	draw_spectrum(display, 0, 0, SPECT_WIDTH, 32, disp_info.spect);
-	// draw_connection(display, 128 - 2 * W, 0, disp_info.conn); /*c_e: disabled */
+	draw_connection(display, 128 - 2 * W, 0, disp_info.conn); /*c_e: disabled */
 	draw_triangle_slider(display, 128 - 5 * W, 1, 11, 6, /*disp_info.status.get_volume() c_e: disable*/ 60);
 	if (/*disp_info.status.get_kbitrate()c_e: disable*/ 320 > 0)
 		draw_text(display, 128 - 10 * W, 0, 4, /*disp_info.status.get_kbitrate_str() c_e: disable*/ "320");
@@ -498,11 +498,18 @@ void draw_spect_display(ArduiPi_OLED &display, const display_info &disp_info)
 
 void draw_display(ArduiPi_OLED &display, const display_info &disp_info)
 {
+	static int countPage = 0;
+	static bool statePage = 0;
+	if (countPage++ > 100)
+	{
+		countPage = 0;
+		statePage ^= 0x01;
+	}
 	/*c_e: disabled */
 	// mpd_state state = disp_info.status.get_state();
 	if (/*state == MPD_STATE_UNKNOWN || state == MPD_STATE_STOP ||
 	   (state == MPD_STATE_PAUSE && disp_info.pause_screen == 's') */
-		0)
+		statePage)
 		draw_clock(display, disp_info);
 	else
 		draw_spect_display(display, disp_info);
@@ -515,7 +522,7 @@ namespace
 
 void *update_info(void *data)
 {
-	const float delay_secs = 0.3;
+	const float delay_secs = 1;//0.3;
 	display_info *disp_info_orig = (display_info *)data;
 	while (true)
 	{
@@ -525,7 +532,7 @@ void *update_info(void *data)
 
 		/*c_e: disabled */
 		// disp_info.status.init(); // Update MPD status info
-		// disp_info.conn_init();   // Update connection info
+		//disp_info.conn_init();   // Update connection info
 
 		pthread_mutex_lock(&disp_info_lock);
 		disp_info_orig->update_from(disp_info);
@@ -542,23 +549,36 @@ bool get_invert(double period)
 
 int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 {
+	#define	N_BARS 	16
+	#define	N_GAPS	1
+	#define	DATE_FORMAT		0	// 0: DD-MM-YYYY, 1: MM-DD-YYYY
+	#define	CLOCK_FORMAT	0	// 0-3: 0,1 - 24h  2,3 - 12h  0,2 - leading 0
+	#define DEF_SCROLL_RATE  8		 // pixels per second
+	#define DEF_SCROLL_DELAY 5		 // second delay before scrolling
+	#define	FRAMERATE		15
+
 	const double update_sec =
-		1 / (0.9 * opts.framerate); // default update freq just under framerate
+		1 / (0.9 * FRAMERATE); // default update freq just under framerate
 	const long select_usec =
 		update_sec * 1100000; // slightly longer, but still less than framerate
 	Timer timer;
 
 	display_info disp_info;
-	disp_info.scroll = opts.scroll;
-	disp_info.clock_format = opts.clock_format;
-	disp_info.date_format = opts.date_format;
-	disp_info.pause_screen = opts.pause_screen;
-	disp_info.spect.init(opts.bars, opts.gap);
+	vector<double> scroll;
+	scroll.push_back(DEF_SCROLL_RATE);
+	scroll.push_back(DEF_SCROLL_DELAY);
+	scroll.push_back(DEF_SCROLL_RATE);
+	scroll.push_back(DEF_SCROLL_DELAY);
+	disp_info.scroll = scroll;
+	disp_info.clock_format = /*opts.clock_format*/ CLOCK_FORMAT;
+	disp_info.date_format = /*opts.date_format*/DATE_FORMAT;
+	disp_info.pause_screen = /*opts.pause_screen*/'p';
+	disp_info.spect.init(N_BARS, N_GAPS);
 	// disp_info.status.set_player(opts.player); /*c_e: disabled */
 	//disp_info.status.init(); /*c_e: disabled */
 
 	FILE *fRandom = fopen("/dev/random", "r");
-	if (fRandom < 0) {
+	if (fRandom == NULL) {
 		fprintf(stderr, "something error when open random device\n");
 		return 1;
 	}
@@ -568,13 +588,13 @@ int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 	
 	// Update MPD info in separate thread to avoid stuttering in the spectrum
 	// animation.
-	pthread_t update_info_thread;
-	if (pthread_create(&update_info_thread, NULL, update_info,
-					   (void *)(&disp_info)))
-	{
-		fprintf(stderr, "error: could not create pthread\n");
-		return 1;
-	}
+	// pthread_t update_info_thread;
+	// if (pthread_create(&update_info_thread, NULL, update_info,
+	// 				   (void *)(&disp_info)))
+	// {
+	// 	fprintf(stderr, "error: could not create pthread\n");
+	// 	return 1;
+	// }
 
 	if (pthread_mutex_init(&disp_info_lock, NULL) != 0)
 	{
@@ -590,37 +610,37 @@ int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 	while (true)
 	{
 		int num_bars_read = 0;
-		if (fifo_fd >= 0)
-		{
-			fd_set set;
-			FD_ZERO(&set);
-			FD_SET(fifo_fd, &set);
+		// if (fifo_fd >= 0)
+		// {
+		// 	fd_set set;
+		// 	FD_ZERO(&set);
+		// 	FD_SET(fifo_fd, &set);
 
-			// FIFO read timeout value
-			struct timeval timeout;
-			timeout.tv_sec = 0;
-			timeout.tv_usec = select_usec; // slightly longer than timer
+		// 	// FIFO read timeout value
+		// 	struct timeval timeout;
+		// 	timeout.tv_sec = 0;
+		// 	timeout.tv_usec = select_usec; // slightly longer than timer
 
-			// If there is data read it all.
-			if (select(FD_SETSIZE, &set, NULL, NULL, &timeout) > 0)
-			{
-				do
-				{
-					printf("read spectrum height \n");
-					num_bars_read =
-						fread(&disp_info.spect.heights[0], sizeof(unsigned char),
-							  disp_info.spect.heights.size(), fRandom);
+		// 	// If there is data read it all.
+		// 	if (select(FD_SETSIZE, &set, NULL, NULL, &timeout) > 0)
+		// 	{
+		// 		do
+		// 		{
+		// 			printf("read spectrum height \n");
+		// 			num_bars_read =
+		// 				fread(&disp_info.spect.heights[0], sizeof(unsigned char),
+		// 					  disp_info.spect.heights.size(), fRandom);
 					
-					// for (int i =0 ;i < 16; i++)
-					// 	disp_info.spect.heights[i] = 255;
+		// 			// for (int i =0 ;i < 16; i++)
+		// 			// 	disp_info.spect.heights[i] = 255;
 
-					FD_ZERO(&set);
-					FD_SET(fifo_fd, &set);
-					timeout.tv_sec = 0;
-					timeout.tv_usec = 0;
-				} while (select(FD_SETSIZE, &set, NULL, NULL, &timeout) > 0);
-			}
-		}
+		// 			FD_ZERO(&set);
+		// 			FD_SET(fifo_fd, &set);
+		// 			timeout.tv_sec = 0;
+		// 			timeout.tv_usec = 0;
+		// 		} while (select(FD_SETSIZE, &set, NULL, NULL, &timeout) > 0);
+		// 	}
+		// }
 
 		fread(&disp_info.spect.heights[0], sizeof(unsigned char), disp_info.spect.heights.size(), fRandom);
 
@@ -640,12 +660,13 @@ int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 		// Update display if necessary
 		if (timer.finished() || num_bars_read)
 		{
-			//opts.message("Time finished");
+			disp_info.conn_init();
+
 			display.clearDisplay();
-			pthread_mutex_lock(&disp_info_lock);
+			//pthread_mutex_lock(&disp_info_lock);
 			display.invertDisplay(get_invert(opts.invert));
 			draw_display(display, disp_info);
-			pthread_mutex_unlock(&disp_info_lock);
+			//pthread_mutex_unlock(&disp_info_lock);
 			display.display();
 		}
 
@@ -677,10 +698,10 @@ int main(int argc, char **argv)
 	//opts.process_command_line(argc, argv);
 
 	/* init oled parameter */
-	opts.oled = OLED_SEEED_I2C_128x64;
-	opts.i2c_addr = 0x3C;
-	opts.i2c_bus = 0x01; // set to bus 1
-	opts.invert = 0;
+	// opts.oled = OLED_SEEED_I2C_128x64;
+	// opts.i2c_addr = 0x3C;
+	// opts.i2c_bus = 0x01; // set to bus 1
+	// opts.invert = 0;
 
 	if (!display.init_i2c(OLED_ADAFRUIT_I2C_128x64, 0x3c))
 		return false;

@@ -97,6 +97,7 @@ void SpotifyTrack::trackInformationCallback(std::unique_ptr<MercuryResponse> res
     pbDecode(trackInfo, Track_fields, response->parts[0]);
 
     CSPOT_LOG(info, "Track name: %s", trackInfo.name);
+    CSPOT_LOG(info, "Track artist: %s", trackInfo.artist);
     CSPOT_LOG(info, "Track duration: %d", trackInfo.duration);
     CSPOT_LOG(debug, "trackInfo.restriction.size() = %d", trackInfo.restriction_count);
 
