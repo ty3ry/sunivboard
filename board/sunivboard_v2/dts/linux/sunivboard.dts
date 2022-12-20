@@ -60,21 +60,53 @@
 	pcm5102a: pcm5102a {
 		#sound-dai-cells = <0>;
 		compatible = "ti,pcm5102a";
+		pcm510x,format = "i2s";
 		status = "okay";
 	};
 
+	/*
 	sound {
 		compatible = "simple-audio-card";
+		simple-audio-card,name = "I2S Master";
 		simple-audio-card,format = "i2s";
-		simple-audio-card,name = "PCM5102a";
-		simple-audio-card,bitclock-master = <&sound1_master>;
-		simple-audio-card,frame-master = <&sound1_master>;
-		simple-audio-card,bitclock-inversion;
+		//simple-audio-card,bitclock-master = <&cpu_dai>;
+		//simple-audio-card,frame-master = <&cpu_dai>;
+		//simple-audio-card,system-clock-frequency = <24000000>;
+		//simple-audio-card,system-clock-direction = "out";
+		//simple-audio-card,convert-rate = <48000>;
+		simple-audio-card,mclk-fs = <256>;
+		//simple-audio-card,widgets = "Speaker", "External Speaker";
+		//simple-audio-card,bitclock-inversion;
+		//simple-audio-card,routing = "pcm5102a Playback", "DAI0 Playback";
+		status ="okay";
 		
-		sound1_master: simple-audio-card,codec {
-			#sound-dai-cells = <0>;
+		cpu_dai: simple-audio-card,cpu {
+				sound-dai = <&i2s0>;
+		};
+		
+		codec_dai: simple-audio-card,codec {
+			//#sound-dai-cells = <0>;
 			sound-dai = <&pcm5102a>;
-			
+			//prefix = "pcm5102a";
+			//clocks = <&osc>;
+				
+		};
+	};
+	*/
+	sound {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "PCM5102 I2S Master";
+		simple-audio-card,mclk-fs = <256>;
+ 
+		simple-audio-card,dai-link@0 {
+			format = "i2s";
+			cpu {
+				sound-dai = <&i2s0>;
+			};
+ 
+			codec {
+				sound-dai = <&pcm5102a>;
+			};
 		};
 	};
 };
@@ -181,6 +213,10 @@
 };
 
 &i2c2 {
+	status = "okay";
+};
+
+&i2s0 {
 	status = "okay";
 };
 

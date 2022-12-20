@@ -43,7 +43,7 @@ redistribution
 #include <linux/i2c.h>
 #include <sys/ioctl.h>
 
-#define	I2C_DEVICE 	"/dev/i2c-1"
+#define	I2C_DEVICE 	"/dev/i2c-0"
 
 const char *oled_type_str[] = {"Adafruit SPI 128x32", "Adafruit SPI 128x64",
 							   "Adafruit I2C 128x32", "Adafruit I2C 128x64",
