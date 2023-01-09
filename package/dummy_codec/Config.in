@@ -1,0 +1,4 @@
+config BR2_PACKAGE_DUMMY_CODEC
+	bool "Dummy Codec"
+	help
+	  Dummmy Codec Kernel Module

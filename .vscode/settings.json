@@ -21,6 +21,7 @@
         "atomic": "cpp",
         "*.tcc": "cpp",
         "condition_variable": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "platform_device.h": "c"
     }
 }
