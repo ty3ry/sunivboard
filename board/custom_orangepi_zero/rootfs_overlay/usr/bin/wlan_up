@@ -1,0 +1,24 @@
+#!/bin/sh
+
+ENABLE_UDHCP_WLAN=1
+
+until iwconfig | grep wlan0; 
+do 
+    sleep 2; 
+    echo "tick"; 
+done
+
+ifconfig wlan0 up
+wpa_supplicant -iwlan0 -c /etc/wpa_supplicant.conf -Dnl80211 -B
+
+
+# wlan udhcp 
+if [ $ENABLE_UDHCP_WLAN -eq 1 ]
+then
+    echo "Start udhcp for wlan"
+    # start dhcp client for wlan0
+    udhcpc -i wlan0
+else
+    echo "Disable udhcp for wlan"
+fi
+

@@ -1,0 +1,4 @@
+config BR2_PACKAGE_HIFIBERRY_DAC
+	bool "Hifiberry DAC"
+	help
+	  Hifiberry Codec Kernel Module using TI PCM5102A

@@ -10,4 +10,4 @@ source "$BR2_EXTERNAL_SBCBOARD_PATH/package/oled/Config.in"
 source "$BR2_EXTERNAL_SBCBOARD_PATH/package/oled_player/Config.in"
 
 #kernel module
-source "$BR2_EXTERNAL_SBCBOARD_PATH/package/dummy_codec/Config.in"
+source "$BR2_EXTERNAL_SBCBOARD_PATH/package/hifiberry_dac/Config.in"

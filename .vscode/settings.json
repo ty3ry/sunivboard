@@ -22,6 +22,8 @@
         "*.tcc": "cpp",
         "condition_variable": "c",
         "stdbool.h": "c",
-        "platform_device.h": "c"
+        "platform_device.h": "c",
+        "unordered_map": "c",
+        "memory": "c"
     }
 }
