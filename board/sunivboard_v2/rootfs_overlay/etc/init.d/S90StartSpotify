@@ -1,8 +1,5 @@
 #!/bin/ash
 
-# skip excution process
-exit
-
 echo "Start CSpot (Spotify Connect)"
 
 APPNAME=cspotcli

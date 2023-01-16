@@ -1,0 +1,5 @@
+#!/bin/sh
+
+
+# start oled display
+oled_player &

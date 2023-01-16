@@ -703,7 +703,7 @@ int main(int argc, char **argv)
 	// opts.i2c_bus = 0x01; // set to bus 1
 	// opts.invert = 0;
 
-	if (!display.init_i2c(OLED_ADAFRUIT_I2C_128x32, 0x3c))
+	if (!display.init_i2c(OLED_ADAFRUIT_I2C_128x64, 0x3c))
 		return false;
 
 	display.begin();

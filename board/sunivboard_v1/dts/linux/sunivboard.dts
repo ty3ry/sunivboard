@@ -63,6 +63,12 @@
 		status = "okay";
 	};
 
+	max98357a: max98357a {
+		#sound-dai-cells = <0>;
+		compatible = "maxim,max98357a";
+		status = "okay";
+	};
+
 	dummy_codec: dummy_codec {
 		compatible = "asoc,snd-soc-dummy";
 		#sound-dai-cells = <0>;
@@ -71,68 +77,31 @@
 
 	/*
 	sound {
-		compatible = "simple-audio-card";
-		simple-audio-card,name = "I2S Master";
-		simple-audio-card,format = "i2s";
-		simple-audio-card,bitclock-master = <&cpu_dai>;
-		simple-audio-card,frame-master = <&cpu_dai>;
-		//simple-audio-card,system-clock-frequency = <24000000>;
-		//simple-audio-card,system-clock-direction = "out";
-		//simple-audio-card,convert-rate = <48000>;
-		simple-audio-card,mclk-fs = <512>;
-		//simple-audio-card,widgets = "Speaker", "External Speaker";
-		//simple-audio-card,bitclock-inversion;
-		//simple-audio-card,routing = "dummy_codec Playback", "DAI0 Playback";
-		simple-audio-card,widgets = "Speaker", "HIFI Playback";
-        simple-audio-card,routing =  "HIFI Playback", "LOUTL",
-									 "HIFI Playback", "LOUTR" ;
-		status ="okay";
-		
-		cpu_dai: simple-audio-card,cpu {
-				sound-dai = <&i2s0>;
-				// bitclock-master;
-				// bitclock-inversion;
-				// frame-master;
-				// system-clock-frequency = <24000000>;
-				// system-clock-direction = "out";
-				dai-tdm-slot-num = <2>;
-            	dai-tdm-slot-width = <32>;
-		};
-		
-		codec_dai: simple-audio-card,codec {
-			#sound-dai-cells = <0>;
-			sound-dai = <&pcm5102a>;
-			//sound-dai = <&dummy_codec>;
-			//prefix = "pcm5102a";
-			//clocks = <&osc24M>;
-		};
-	};
-	*/
-
-	sound {
 		compatible = "hifiberry,hifiberry-dac";
 		i2s-controller = <&i2s0>;
 		status = "okay";
 	};
+	*/
 
-	/*
+	
 	sound {
 		compatible = "simple-audio-card";
-		simple-audio-card,name = "PCM5102 I2S Master";
+		simple-audio-card,name = "max98357a I2S Master";
+		simple-audio-card,format = "i2s";
+		// simple-audio-card,bitclock-master = <&cpu_dai_master>;
+		// simple-audio-card,frame-master = <&cpu_dai_master>;
 		simple-audio-card,mclk-fs = <256>;
+		//simple-audio-card,widgets = "Speaker", "External Speaker";
  
-		simple-audio-card,dai-link@0 {
-			format = "i2s";
-			cpu {
-				sound-dai = <&i2s0>;
-			};
- 
-			codec {
-				sound-dai = <&pcm5102a>;
-			};
+		cpu_dai_master: simple-audio-card,cpu {
+			sound-dai = <&i2s0>;
+		};
+
+		dailink0_master: simple-audio-card,codec {
+			sound-dai = <&pcm5102a>;
 		};
 	};
-	*/
+	
 };
 
 &pio {
@@ -242,7 +211,7 @@
 	status = "okay";
 };
 
-
+/*
 &codec {
 	allwinner,audio-routing =
 		"Headphone", "HP",
@@ -252,84 +221,5 @@
 		"FMINR", "Right FM In",
 		"MIC", "Mic";
 	status = "okay";
-};
-
-
-/*
-sound-tlv320aic34 {
-		compatible = "simple-audio-card";
-		simple-audio-card,name = "HTC2-Sound-Card";
-		simple-audio-card,format = "i2s";
-		simple-audio-card,bitclock-master = <&dailink_master>;
-		simple-audio-card,frame-master = <&dailink_master>;
-		simple-audio-card,mclk-fs = <256>;
-		simple-audio-card,widgets =
-			"Microphone", "Microphone Jack",
-			"Line", "Line In Jack",
-			"Line", "Line Out Jack",
-			"Headphone", "Headphone Jack",
-			"Speaker", "Speaker External";
-		simple-audio-card,routing =
-			"Headphone Jack", "HPLOUT",
-			"Headphone Jack", "HPROUT";
-			
-		dailink_master: simple-audio-card,cpu {
-			sound-dai = <&sai2>;
-		};
-
-		simple-audio-card,codec {
-			sound-dai = <&tlv320aic34>;
-			clocks = <&audiomix_clk IMX8MP_CLK_AUDIOMIX_SAI2_MCLK1>;
-		};
-	};
-};
-
-&sai2 {
-	#sound-dai-cells = <0>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_sai2>;
-	assigned-clocks = <&clk IMX8MP_CLK_SAI2>;
-	assigned-clock-parents = <&clk IMX8MP_AUDIO_PLL1_OUT>;
-	assigned-clock-rates = <12288000>;
-	clocks = <&audiomix_clk IMX8MP_CLK_AUDIOMIX_SAI2_IPG>, <&clk IMX8MP_CLK_DUMMY>,
-	<&audiomix_clk IMX8MP_CLK_AUDIOMIX_SAI2_MCLK1>, <&clk IMX8MP_CLK_DUMMY>,
-	<&clk IMX8MP_CLK_DUMMY>, <&clk IMX8MP_AUDIO_PLL1_OUT>,
-	<&clk IMX8MP_AUDIO_PLL2_OUT>;
-	clock-names = "bus", "mclk0", "mclk1", "mclk2", "mclk3", "pll8k", "pll11k";
-	fsl,sai-synchronous-rx;
-	status = "okay";
-};
-
- 
-
-&i2c3 {
-	tlv320aic34: tlv320aic34@18 {
-		#sound-dai-cells = <0>;
-		compatible = "ti,tlv320aic3x";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_tlv320>;
-		reg = <0x18>;
-		reset-gpios = <&gpio1 6 GPIO_ACTIVE_LOW>;
-		IOVDD-supply = <&reg_audio>; 
-		DVDD-supply = <&reg_audio_1v8>; 
-		AVDD-supply = <&reg_audio>; 
-		DRVDD-supply = <&reg_audio>; 
-	};
-};
-
-pinctrl_sai2: sai2grp {
-	fsl,pins = <
-	MX8MP_IOMUXC_SAI2_MCLK__AUDIOMIX_SAI2_MCLK 0xd6
-	MX8MP_IOMUXC_SAI2_RXD0__AUDIOMIX_SAI2_RX_DATA00 0xd6
-	MX8MP_IOMUXC_SAI2_RXFS__AUDIOMIX_SAI2_RX_SYNC 0xd6
-	MX8MP_IOMUXC_SAI2_TXC__AUDIOMIX_SAI2_TX_BCLK 0xd6
-	MX8MP_IOMUXC_SAI2_TXD0__AUDIOMIX_SAI2_TX_DATA00 0xd6
-	>;
-};
-
-pinctrl_tlv320: tlv320grp {
-	fsl,pins = <
-	MX8MP_IOMUXC_GPIO1_IO06__GPIO1_IO06 0x16
-	>;
 };
 */
