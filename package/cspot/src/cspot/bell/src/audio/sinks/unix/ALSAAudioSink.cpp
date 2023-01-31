@@ -2,7 +2,19 @@
 
 ALSAAudioSink::ALSAAudioSink(std::string device) : Task("", 0, 0, 0)
 {
-       
+    snd_pcm_uframes_t     period_size_min;
+    snd_pcm_uframes_t     period_size_max;
+    snd_pcm_uframes_t     buffer_size_min;
+    snd_pcm_uframes_t     buffer_size_max;
+
+    static unsigned int   buffer_time = 0;	            /* ring buffer length in us */
+    static unsigned int   period_time = 0;	            /* period time in us */
+    static unsigned int   nperiods    = 4;                  /* number of periods */
+
+    static snd_pcm_uframes_t  buffer_size;
+    static snd_pcm_uframes_t  period_size;
+    unsigned int                rate = 44100;
+
     /* Open the PCM device in playback mode */
     if (pcm = snd_pcm_open(&pcm_handle, device.c_str(),
                            SND_PCM_STREAM_PLAYBACK, 0) < 0)
@@ -27,12 +39,36 @@ ALSAAudioSink::ALSAAudioSink(std::string device) : Task("", 0, 0, 0)
 
     if (pcm = snd_pcm_hw_params_set_channels(pcm_handle, params, 2) < 0)
         printf("ERROR: Can't set channels number. %s\n", snd_strerror(pcm));
-    unsigned int rate = 44100;
+
+    
     if (pcm = snd_pcm_hw_params_set_rate_near(pcm_handle, params, &rate, 0) < 0)
         printf("ERROR: Can't set rate. %s\n", snd_strerror(pcm));
+    
+
+    snd_pcm_hw_params_get_buffer_size_min(params, &buffer_size_min);
+    snd_pcm_hw_params_get_buffer_size_max(params, &buffer_size_max);
+    snd_pcm_hw_params_get_period_size_min(params, &period_size_min, NULL);
+    snd_pcm_hw_params_get_period_size_max(params, &period_size_max, NULL);
+    printf("Buffer size range from %lu to %lu\n",buffer_size_min, buffer_size_max);
+    printf("Period size range from %lu to %lu\n",period_size_min, period_size_max);
+
+    buffer_size = buffer_size_max;
+    buffer_size = (buffer_size / nperiods) * nperiods;
+    printf("Using max buffer size %lu\n", buffer_size);
+    if ( (pcm = snd_pcm_hw_params_set_buffer_size_near(pcm_handle, params, &buffer_size)) < 0) 
+    {
+        printf("Unabled to set buffer size %lu for playback: %s \n", buffer_size, snd_strerror(pcm));
+    }
+
+    if ( (pcm = snd_pcm_hw_params_set_periods_near(pcm_handle, params, &nperiods, NULL)) < 0)
+    {
+        printf("Unabled to set nperiodes %u for playback: %s \n", nperiods, snd_strerror(pcm));
+    }
+    /*
     unsigned int periodTime = 800;
     int dir = -1;
     snd_pcm_hw_params_set_period_time_near(pcm_handle, params, &periodTime, &dir);
+    */
 
     /* Write parameters */
     if (pcm = snd_pcm_hw_params(pcm_handle, params) < 0)
@@ -56,6 +92,10 @@ ALSAAudioSink::ALSAAudioSink(std::string device) : Task("", 0, 0, 0)
 
     this->buff_size = frames * 2 * 2 /* 2 -> sample size */;
     printf("required buff_size: %d\n", buff_size);
+    
+    /* prepare pcm */
+    snd_pcm_prepare(pcm_handle);
+
     this->startTask();
 }
 

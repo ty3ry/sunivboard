@@ -523,9 +523,33 @@ namespace
 void *update_info(void *data)
 {
 	const float delay_secs = 1;//0.3;
-	display_info *disp_info_orig = (display_info *)data;
+	//display_info *disp_info_orig = (display_info *)data;
+	display_info *disp_info = (display_info *)data;
+
+	#define	N_BARS 	16
+	#define	N_GAPS	1
+	#define	DATE_FORMAT		0	// 0: DD-MM-YYYY, 1: MM-DD-YYYY
+	#define	CLOCK_FORMAT	0	// 0-3: 0,1 - 24h  2,3 - 12h  0,2 - leading 0
+	#define DEF_SCROLL_RATE  8		 // pixels per second
+	#define DEF_SCROLL_DELAY 5		 // second delay before scrolling
+	#define	FRAMERATE		15
+
+	const double update_sec =
+		1 / (0.9 * FRAMERATE); // default update freq just under framerate
+	const long select_usec =
+		update_sec * 1100000; // slightly longer, but still less than framerate
+	Timer timer;
+
+	int zero_read_cnt = 0; // number of consecutive reads of zero bytes
+	FILE *fRandom = fopen("/dev/random", "r");
+	if (fRandom == NULL) {
+		fprintf(stderr, "something error when open random device\n");
+	}
+
+
 	while (true)
 	{
+		#if 0
 		pthread_mutex_lock(&disp_info_lock);
 		display_info disp_info = *disp_info_orig;
 		pthread_mutex_unlock(&disp_info_lock);
@@ -539,6 +563,7 @@ void *update_info(void *data)
 		pthread_mutex_unlock(&disp_info_lock);
 
 		usleep(delay_secs * 1000000);
+		#endif
 	}
 };
 
@@ -577,24 +602,27 @@ int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 	// disp_info.status.set_player(opts.player); /*c_e: disabled */
 	//disp_info.status.init(); /*c_e: disabled */
 
+#if 1
 	FILE *fRandom = fopen("/dev/random", "r");
 	if (fRandom == NULL) {
 		fprintf(stderr, "something error when open random device\n");
 		return 1;
 	}
-
+#endif
 	disp_info.status.set_title("Entahlah ini judulnya apa , mungkin kamu tau ?");
 	disp_info.status.set_origin("Spotify");
 	
 	// Update MPD info in separate thread to avoid stuttering in the spectrum
 	// animation.
-	// pthread_t update_info_thread;
-	// if (pthread_create(&update_info_thread, NULL, update_info,
-	// 				   (void *)(&disp_info)))
-	// {
-	// 	fprintf(stderr, "error: could not create pthread\n");
-	// 	return 1;
-	// }
+#if 0
+	pthread_t update_info_thread;
+	if (pthread_create(&update_info_thread, NULL, update_info,
+					   (void *)(&disp_info)))
+	{
+		fprintf(stderr, "error: could not create pthread\n");
+		return 1;
+	}
+#endif
 
 	if (pthread_mutex_init(&disp_info_lock, NULL) != 0)
 	{
@@ -607,6 +635,8 @@ int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 	FILE *fifo_file = nullptr;
 
 	int zero_read_cnt = 0; // number of consecutive reads of zero bytes
+
+#if 1
 	while (true)
 	{
 		int num_bars_read = 0;
@@ -673,6 +703,7 @@ int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 		if (timer.finished())
 		{
 			//opts.message("Time finished");
+			
 			display.reset_offset();
 			if (/*disp_info.status.get_state() == MPD_STATE_PLAY && fifo_fd < 0*/ /*c_e: disabled */ 0)
 			{
@@ -680,12 +711,18 @@ int start_idle_loop(ArduiPi_OLED &display, const OledOpts &opts)
 				// https://github.com/antiprism/mpd_oled/issues/67
 				usleep(2 * 1000000);
 				//opts.print_status_or_exit(start_cava(&fifo_file, opts));
-				fifo_fd = fileno(fifo_file);
+				//fifo_fd = fileno(fifo_file);
 			}
 
 			timer.set_timer(update_sec); // Reset the timer
 		}
 	}
+#else
+	while(1)
+	{
+		usleep(2 * 1000000);
+	}
+#endif
 
 	return 0;
 }

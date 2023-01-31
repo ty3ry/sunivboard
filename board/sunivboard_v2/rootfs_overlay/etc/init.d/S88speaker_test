@@ -6,11 +6,11 @@ VOLUME=100
 
 # running speaker-test
 # /usr/bin/speaker-test -c2 -t wav > /dev/null 2>&1 &
-echo "start speaker-test ..."
-/usr/bin/speaker-test -c2 -D plughw:1,0
+#echo "start speaker-test ..."
+#/usr/bin/speaker-test -c2 -D plughw:1,0
 
 
-exit 
+#exit 
 
 # config alsa output
 echo "Unmute Speaker"

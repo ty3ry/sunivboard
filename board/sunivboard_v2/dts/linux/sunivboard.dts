@@ -43,12 +43,12 @@
 			linux,default-trigger = "heartbeat";
 		};
 
-		activity {
-			label = "Activity";
-			gpios = <&pio 4 6 GPIO_ACTIVE_LOW>;	// PE6
-			default-state = "on";
-			linux,default-trigger = "activity";
-		};
+		// activity {
+		// 	label = "Activity";
+		// 	gpios = <&pio 4 6 GPIO_ACTIVE_LOW>;	// PE6
+		// 	default-state = "on";
+		// 	linux,default-trigger = "activity";
+		// };
 	};
 
 	wifi_pwrseq: wifi_pwrseq {
@@ -57,7 +57,11 @@
 		post-power-on-delay-ms = <200>;
 	};
 
-	
+	pcm5102a: pcm5102a {
+		#sound-dai-cells = <0>;
+		compatible = "ti,pcm5102a";
+		status = "okay";
+	};
 	
 	sound {
 		compatible = "simple-audio-card";
@@ -65,26 +69,20 @@
 		simple-audio-card,format = "i2s";
 		// simple-audio-card,lrclk-fs = <48000>;
 		simple-audio-card,mclk-fs = <256>;
-		simple-audio-card,widgets = "Speaker", "External Speaker";
-		simple-audio-card,routing = "External Speaker", "OUT";
+		simple-audio-card,bitclock-master = <&dailink_cpu>;
+		simple-audio-card,frame-master = <&dailink_cpu>;
 		status ="okay";
 
-		simple-audio-card,cpu {
+		dailink_cpu: simple-audio-card,cpu {
 			sound-dai = <&i2s0>;
 		};
 
-		simple-audio-card,codec {
+		dailink_codec: simple-audio-card,codec {
 			sound-dai = <&pcm5102a>;     
 		};
 
 	};
 	
-
-	/*
-	sound: sound {
-		status = "disabled";
-	};
-	*/
 };
 
 
@@ -184,38 +182,22 @@
 
 &i2c0 {
 	status = "okay";
-
-	pcm5102a: pcm5102a@12 {
-		reg = <0x12>;
-		#sound-dai-cells = <0>;
-		compatible = "ti,pcm5102a";
-		//pcm510x,format = "i2s";
-		status = "okay";
-	};
 };
 
 &i2c1 {
-	status = "okay";
+	status = "disabled";
 };
 
 &i2c2 {
-	status = "okay";
+	status = "disabled";
 };
 
 
 &i2s0 {
-	#clock-cells = <0>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&i2s0_pd_pins>;
 	sound-dai = <&pcm5102a>;
 	status = "okay";
 };
 
-// &sound {
-// 	compatible = "hifiberry,hifiberry-dac";
-// 	i2s-controller = <&i2s0>;
-// 	status = "okay";
-// };
 
 &codec {
 	allwinner,audio-routing =

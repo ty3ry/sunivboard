@@ -14,6 +14,7 @@ static size_t vorbisReadCb(void *ptr, size_t size, size_t nmemb, ChunkedAudioStr
         //     break;
         // }
         BELL_SLEEP_MS(1);
+        //usleep(100);
     }
     return readSize;
 }

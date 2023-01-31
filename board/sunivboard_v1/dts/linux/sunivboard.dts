@@ -17,7 +17,6 @@
 	aliases {
 		serial0 = &uart0;
 		spi0 = &spi0;
-		ethernet0 = &brcmf;
 	};
 
 	chosen {
@@ -43,18 +42,12 @@
 			linux,default-trigger = "heartbeat";
 		};
 
-		activity {
-			label = "Activity";
-			gpios = <&pio 4 6 GPIO_ACTIVE_LOW>;	// PE6
-			default-state = "on";
-			linux,default-trigger = "activity";
-		};
-	};
-
-	wifi_pwrseq: wifi_pwrseq {
-		compatible = "mmc-pwrseq-simple";
-		reset-gpios = <&pio 4 3 GPIO_ACTIVE_LOW>; /* PE3 */
-		post-power-on-delay-ms = <200>;
+		// activity {
+		// 	label = "Activity";
+		// 	gpios = <&pio 4 6 GPIO_ACTIVE_LOW>;	// PE6
+		// 	default-state = "on";
+		// 	linux,default-trigger = "activity";
+		// };
 	};
 
 	pcm5102a: pcm5102a {
@@ -62,7 +55,7 @@
 		compatible = "ti,pcm5102a";
 		status = "okay";
 	};
-
+/*
 	max98357a: max98357a {
 		#sound-dai-cells = <0>;
 		compatible = "maxim,max98357a";
@@ -74,22 +67,14 @@
 		#sound-dai-cells = <0>;
 		status = "okay";
 	};
+*/
 
-	/*
-	sound {
-		compatible = "hifiberry,hifiberry-dac";
-		i2s-controller = <&i2s0>;
-		status = "okay";
-	};
-	*/
-
-	
 	sound {
 		compatible = "simple-audio-card";
-		simple-audio-card,name = "max98357a I2S Master";
+		simple-audio-card,name = "PCM5102A I2S Master";
 		simple-audio-card,format = "i2s";
-		// simple-audio-card,bitclock-master = <&cpu_dai_master>;
-		// simple-audio-card,frame-master = <&cpu_dai_master>;
+		simple-audio-card,bitclock-master = <&cpu_dai_master>;
+		simple-audio-card,frame-master = <&cpu_dai_master>;
 		simple-audio-card,mclk-fs = <256>;
 		//simple-audio-card,widgets = "Speaker", "External Speaker";
  
@@ -104,12 +89,6 @@
 	
 };
 
-&pio {
-	led_pins: led_pins {
-		pins = "PE6";
-		function = "gpio_out";
-	};
-};
 
 &spi0 {
     pinctrl-names = "default";
@@ -156,25 +135,12 @@
 
 
 &mmc0 {
-	vmmc-supply = <&reg_vcc3v3>;
-	vqmmc-supply = <&reg_vcc3v3>;
-	mmc-pwrseq = <&wifi_pwrseq>;
-	bus-width = <4>;
-	non-removable;
-	//broken-cd;
-	status = "okay";
 
-	brcmf: wifi@1 {
-		reg = <1>;
-		compatible = "brcm,bcm4329-fmac";
-		interrupt-parent = <&pio>;
-		interrupts = <4 5 IRQ_TYPE_LEVEL_LOW>; // PE5
-		interrupt-names = "host-wake";
-	};
+	status = "disabled";
 };
 
 &otg_sram {
-	status = "okay";
+	status = "disabled";
 };
 
 &uart0 {
@@ -185,33 +151,31 @@
 
 &usb_otg {
 	dr_mode = "peripheral";
-	status = "okay";
+	status = "disabled";
 };
 
 &usbphy {
 	usb0_id_det = <&pio 4 2 GPIO_ACTIVE_HIGH>; /* PE2 */
-	status = "okay";
+	status = "disabled";
 };
 
 &cir {
-	pinctrl-names = "default";
-	pinctrl-0 = <&ir_pin>;
-	status = "okay";
+	//pinctrl-names = "default";
+	//pinctrl-0 = <&ir_pin>;
+	status = "disabled";
 };
 
 &i2c2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&i2c2_pd_pins>;
-	status = "okay";
+	//pinctrl-names = "default";
+	//pinctrl-0 = <&i2c2_pd_pins>;
+	status = "disabled";
 };
 
 &i2s0 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&i2s0_pd_pins>;
 	status = "okay";
 };
 
-/*
+
 &codec {
 	allwinner,audio-routing =
 		"Headphone", "HP",
@@ -222,4 +186,3 @@
 		"MIC", "Mic";
 	status = "okay";
 };
-*/

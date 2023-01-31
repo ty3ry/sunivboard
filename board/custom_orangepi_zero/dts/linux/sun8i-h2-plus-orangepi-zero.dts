@@ -81,13 +81,22 @@
 		};
 	};
 
+	wifi_reg_pin: wifi-reg-pin {
+		pins = "PA2";
+		function = "gpio_out";
+	};
+
 	reg_vcc_wifi: reg_vcc_wifi {
 		compatible = "regulator-fixed";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&wifi_reg_pin>;
+
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		regulator-name = "vcc-wifi";
 		enable-active-high;
-		gpio = <&pio 0 20 GPIO_ACTIVE_HIGH>;
+		gpio = <&pio 0 2 GPIO_ACTIVE_HIGH>;
 	};
 
 	reg_vdd_cpux: vdd-cpux-regulator {
@@ -118,7 +127,7 @@
 		status = "okay";
 	};
 
-/*
+
 	sound {
 		compatible = "simple-audio-card";
 		simple-audio-card,name = "I2S-Master PCM5102a";
@@ -135,7 +144,7 @@
 		};
 
 	};
-	*/
+
 };
 
 &cpu0 {
@@ -229,25 +238,31 @@
 	status = "disabled";
 };
 
-&uart2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&uart2_pins>;
-	status = "disabled";
-};
+// &uart2 {
+// 	pinctrl-names = "default";
+// 	pinctrl-0 = <&uart2_pins>;
+// 	status = "disabled";
+// };
 
 &usb_otg {
 	dr_mode = "host";
 	status = "okay";
 };
 
-/*
+
 &i2s0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2s0_pins>;
 	status = "okay";
 };
-*/
+
 &i2c0 {
 	status = "okay";
 };
+
+// &i2c1 {
+// 	status = "okay";
+// };
 
 &usbphy {
 	/*
