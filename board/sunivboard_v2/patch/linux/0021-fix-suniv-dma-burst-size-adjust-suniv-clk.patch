@@ -1,0 +1,28 @@
+--- a/sound/soc/sunxi/sun4i-i2s.c	2023-02-01 05:20:38.236797232 +0700
++++ b/sound/soc/sunxi/sun4i-i2s.c	2023-02-01 05:20:06.412604057 +0700
+@@ -1245,10 +1245,10 @@
+ 
+ 	i2s->playback_dma_data.addr = res->start +
+ 					i2s->variant->reg_offset_txdata;
+-	i2s->playback_dma_data.maxburst = 8;
++	i2s->playback_dma_data.maxburst = 4;
+ 
+ 	i2s->capture_dma_data.addr = res->start + SUN4I_I2S_FIFO_RX_REG;
+-	i2s->capture_dma_data.maxburst = 8;
++	i2s->capture_dma_data.maxburst = 4;
+ 
+ 	pm_runtime_enable(&pdev->dev);
+ 	if (!pm_runtime_enabled(&pdev->dev)) {
+
+
+--- a/drivers/clk/sunxi_ng/ccu-suniv-f1c100s.c	2023-02-01 10:46:28.279107611 +0700
++++ b/drivers/clk/sunxi_ng/ccu-suniv-f1c100s.c	2023-02-01 10:46:31.419131602 +0700
+@@ -233,7 +233,7 @@
+ 						  "pll-audio" };
+ 
+ static SUNXI_CCU_MUX_WITH_GATE(i2s_clk, "i2s", i2s_spdif_parents,
+-			       0x0b0, 16, 2, BIT(31), 0);
++			       0x0b0, 16, 2, BIT(31), CLK_SET_RATE_PARENT/*0*/);
+ 
+ static SUNXI_CCU_MUX_WITH_GATE(spdif_clk, "spdif", i2s_spdif_parents,
+ 			       0x0b4, 16, 2, BIT(31), 0);

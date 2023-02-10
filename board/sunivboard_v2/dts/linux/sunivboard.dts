@@ -62,36 +62,56 @@
 		compatible = "ti,pcm5102a";
 		status = "okay";
 	};
+
+	spdif_out: spdif-out {
+		#sound-dai-cells = <0>;
+		compatible = "linux,spdif-dit";
+	};
 	
 	sound {
 		compatible = "simple-audio-card";
-		simple-audio-card,name = "I2S-master";
-		simple-audio-card,format = "i2s";
-		// simple-audio-card,lrclk-fs = <48000>;
-		simple-audio-card,mclk-fs = <256>;
-		simple-audio-card,bitclock-master = <&dailink_cpu>;
-		simple-audio-card,frame-master = <&dailink_cpu>;
-		status ="okay";
+		simple-audio-card,name = "Digital Interface";
 
-		dailink_cpu: simple-audio-card,cpu {
-			sound-dai = <&i2s0>;
+		/* i2S */
+		simple-audio-card,dai-link@0 {
+			reg = <0>;
+			format = "i2s";
+			mclk-fs = <256>;
+			//convert-rate = <48000>;
+			cpu {
+				sound-dai = <&i2s0>;
+			};
+			codec {
+				sound-dai = <&pcm5102a>;     
+			};
+
 		};
 
-		dailink_codec: simple-audio-card,codec {
-			sound-dai = <&pcm5102a>;     
+		/* spdif */
+		simple-audio-card,dai-link@1 {
+			reg = <1>;
+			cpu {
+				sound-dai = <&spdif>;
+			};
+			codec {
+				sound-dai = <&spdif_out>;
+			};
 		};
 
 	};
-	
-};
 
+	// sound-spdif {
+	// 	compatible = "simple-audio-card";
+	// 	simple-audio-card,name = "On-board SPDIF";
 
+	// 	simple-audio-card,cpu {
+	// 		sound-dai = <&spdif>;
+	// 	};
 
-&pio {
-	led_pins: led_pins {
-		pins = "PE6";
-		function = "gpio_out";
-	};
+	// 	simple-audio-card,codec {
+	// 		sound-dai = <&spdif_out>;
+	// 	};
+	// };
 };
 
 &spi0 {
@@ -195,6 +215,10 @@
 
 &i2s0 {
 	sound-dai = <&pcm5102a>;
+	status = "okay";
+};
+
+&spdif {
 	status = "okay";
 };
 

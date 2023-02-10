@@ -24,6 +24,7 @@
         "stdbool.h": "c",
         "platform_device.h": "c",
         "unordered_map": "c",
-        "memory": "c"
+        "memory": "c",
+        "module.h": "c"
     }
 }
