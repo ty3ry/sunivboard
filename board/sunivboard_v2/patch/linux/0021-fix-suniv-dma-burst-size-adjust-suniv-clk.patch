@@ -15,14 +15,18 @@
  	if (!pm_runtime_enabled(&pdev->dev)) {
 
 
---- a/drivers/clk/sunxi_ng/ccu-suniv-f1c100s.c	2023-02-01 10:46:28.279107611 +0700
-+++ b/drivers/clk/sunxi_ng/ccu-suniv-f1c100s.c	2023-02-01 10:46:31.419131602 +0700
-@@ -233,7 +233,7 @@
+--- a/drivers/clk/sunxi-ng/ccu-suniv-f1c100s.c	2023-02-01 10:46:28.279107611 +0700
++++ b/drivers/clk/sunxi-ng/ccu-suniv-f1c100s.c	2023-02-01 10:46:31.419131602 +0700
+@@ -233,10 +233,10 @@
  						  "pll-audio" };
  
  static SUNXI_CCU_MUX_WITH_GATE(i2s_clk, "i2s", i2s_spdif_parents,
 -			       0x0b0, 16, 2, BIT(31), 0);
-+			       0x0b0, 16, 2, BIT(31), CLK_SET_RATE_PARENT/*0*/);
++			       0x0b0, 16, 2, BIT(31), CLK_SET_RATE_PARENT);
  
  static SUNXI_CCU_MUX_WITH_GATE(spdif_clk, "spdif", i2s_spdif_parents,
- 			       0x0b4, 16, 2, BIT(31), 0);
+-			       0x0b4, 16, 2, BIT(31), 0);
++			       0x0b4, 16, 2, BIT(31), CLK_SET_RATE_PARENT);
+ 
+ static const char * const cir_clk_parents[] = { "osc32k", "osc24M" };
+ static SUNXI_CCU_MP_WITH_MUX_GATE(cir_clk, "ir",

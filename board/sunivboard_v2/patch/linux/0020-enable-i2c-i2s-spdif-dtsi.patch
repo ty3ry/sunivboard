@@ -1,3 +1,6 @@
+Enable I2C0, I2C1 and I2C3 on allwinner 1fc100s,
+Enable I2S0, SPDIF
+
 --- a/arch/arm/boot/dts/suniv-f1c100s.dtsi	2022-12-11 16:14:08.135398163 +0700
 +++ b/arch/arm/boot/dts/suniv-f1c100s.dtsi	2023-02-01 05:18:54.080198393 +0700
 @@ -3,10 +3,11 @@
@@ -13,7 +16,7 @@
  
  / {
  	#address-cells = <1>;
-@@ -190,6 +191,38 @@
+@@ -190,6 +191,43 @@
  				pins = "PF0", "PF1", "PF2", "PF3", "PF4", "PF5";
  				function = "mmc0";
  			};
@@ -46,13 +49,18 @@
 +			};
 +
 +			i2s0_pd_pins: i2s0-pd-pins {
-+				pins = "PD7", "PD8", "PD9", /*"PD10",*/ "PE6";
++				pins = "PD7", "PD8", "PD9", /*"PD10",*/ "PD11";
 +				function = "i2s";
++			};
++
++			spdif_pins: spdif-pins {
++				pins = "PE6";
++				function = "spdif";
 +			};
  		};
  
  		timer@1c20c00 {
-@@ -216,6 +249,23 @@
+@@ -216,6 +254,23 @@
  			reg = <0x01c20ca0 0x20>;
  		};
  
@@ -76,7 +84,7 @@
  		uart0: serial@1c25000 {
  			compatible = "snps,dw-apb-uart";
  			reg = <0x01c25000 0x400>;
-@@ -249,6 +299,41 @@
+@@ -249,6 +304,56 @@
  			status = "disabled";
  		};
  
@@ -113,6 +121,21 @@
 +			status = "disabled";
 +			#address-cells = <1>;
 +			#size-cells = <0>;
++		};
++
++		spdif: spdif@1c21400 {
++			#sound-dai-cells = <0>;
++			compatible = "allwinner,sun6i-a31-spdif";
++			reg = <0x01c21400 0x400>;
++			interrupts = <5>;
++			clocks = <&ccu CLK_BUS_SPDIF>, <&ccu CLK_SPDIF>;
++			resets = <&ccu RST_BUS_SPDIF>;
++			clock-names = "apb", "spdif";
++			dmas = <&dma SUN4I_DMA_NORMAL 0x01>;
++			dma-names = "tx";
++
++			pinctrl-names = "default";
++			pinctrl-0 = <&spdif_pins>;
 +		};
 +
  		usb_otg: usb@1c13000 {
