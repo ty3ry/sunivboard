@@ -8,6 +8,7 @@ source "$BR2_EXTERNAL_SBCBOARD_PATH/package/usb_hid/Config.in"
 source "$BR2_EXTERNAL_SBCBOARD_PATH/package/presenter/Config.in"
 source "$BR2_EXTERNAL_SBCBOARD_PATH/package/oled/Config.in"
 source "$BR2_EXTERNAL_SBCBOARD_PATH/package/oled_player/Config.in"
+source "$BR2_EXTERNAL_SBCBOARD_PATH/package/alsa_control/Config.in"
 
 #kernel module
 source "$BR2_EXTERNAL_SBCBOARD_PATH/package/hifiberry_dac/Config.in"

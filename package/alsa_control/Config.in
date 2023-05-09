@@ -1,0 +1,4 @@
+config BR2_PACKAGE_ALSA_CONTROL
+	bool "ALSA Control"
+	help
+	  user application to control alsa related control

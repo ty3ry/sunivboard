@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# echo "Speaker testing"
+# internal codec 
+INTERNAL_CODEC_VOLUME=100
+
+# external codec
+EXTERNAL_CODEC_VOLUME=55
+
+# running speaker-test
+# /usr/bin/speaker-test -c2 -t wav > /dev/null 2>&1 &
+#echo "start speaker-test ..."
+#/usr/bin/speaker-test -c2 -D plughw:1,0
+
+
+#exit 
+
+# config alsa output on internal codec
+echo "Unmute Speaker"
+amixer set Headphone unmute > /dev/null 2>&1
+echo "Set Internal Codec Volume to $INTERNAL_CODEC_VOLUME"
+amixer set Headphone $INTERNAL_CODEC_VOLUME% > /dev/null 2>&1
+
+
+# config alsa output on digital 
+echo "Set External Codec Volume to $EXTERNAL_CODEC_VOLUME%"
+amixer -c1 set Master $EXTERNAL_CODEC_VOLUME% > /dev/null 2>&1
+
+echo "Activate ALSA Control using IR"
+alsa_control &
+

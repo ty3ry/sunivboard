@@ -13,7 +13,7 @@ do
     #echo "Wait established connection"
 done
 
-cspotcli -d "plughw:1,0" -n sunivboard_v2 > /dev/null 2&>1 &
+cspotcli -d "plughw:1,2" -n polytron_spotify_connect > /dev/null 2&>1 &
 
 if [ $? -ne 0 ]; then
     echo "Cannot start $APPNAME"

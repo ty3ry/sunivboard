@@ -1,5 +1,29 @@
 #include "ALSAAudioSink.h"
 
+int ALSAAudioSink::MixerInit(void)
+{
+    /** add mixer */
+    const char *device_name = "hw:1";
+    const char *mixer_ctrl_name = "Master";
+    snd_mixer_selem_channel_id_t ch_id = SND_MIXER_SCHN_FRONT_LEFT;
+
+    snd_mixer_open(&mixer, 0);
+    snd_mixer_attach(mixer, device_name);
+    snd_mixer_selem_register(mixer, NULL, NULL);
+    snd_mixer_load(mixer);
+
+    snd_mixer_selem_id_alloca(&ident);
+    snd_mixer_selem_id_set_index(ident, 0);
+    snd_mixer_selem_id_set_name(ident, mixer_ctrl_name);
+    elem = snd_mixer_find_selem(mixer, ident);
+    snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
+    snd_mixer_selem_get_playback_volume(elem, ch_id, &old_volume);
+    printf("Min %ld max %ld current volume %ld\n", min, max, old_volume);
+    volume = old_volume;
+
+    return 0;
+}
+
 ALSAAudioSink::ALSAAudioSink(std::string device) : Task("", 0, 0, 0)
 {
     snd_pcm_uframes_t     period_size_min;
@@ -95,6 +119,9 @@ ALSAAudioSink::ALSAAudioSink(std::string device) : Task("", 0, 0, 0)
     
     /* prepare pcm */
     snd_pcm_prepare(pcm_handle);
+
+    /** init mixer */
+    //this->MixerInit(); // reserved
 
     this->startTask();
 }

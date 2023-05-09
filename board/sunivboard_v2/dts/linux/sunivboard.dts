@@ -98,6 +98,19 @@
 			};
 		};
 
+		/* digital PA */
+		simple-audio-card,dai-link@2 {
+			reg = <2>;
+			format = "i2s";
+			mclk-fs = <256>;
+			cpu {
+				sound-dai = <&i2s0>;
+			};
+			codec {
+				sound-dai = <&tas5805m>;     
+			};
+		};
+
 	};
 
 	// sound-spdif {
@@ -202,10 +215,22 @@
 
 &i2c0 {
 	status = "okay";
+	
+	tas5805m: tas5805m@2c {
+		#sound-dai-cells = <0>;
+		reg = <0x2c>;
+		compatible = "ti,tas5805m";
+
+		//pvdd-supply = <&audiopwr>;
+		//pdn-gpios = <&tlmm 160 0>;
+		//ti,dsp-config-name = "mono_pbtl_48khz";
+	};
+	
 };
 
 &i2c1 {
 	status = "disabled";
+	
 };
 
 &i2c2 {
@@ -214,7 +239,7 @@
 
 
 &i2s0 {
-	sound-dai = <&pcm5102a>;
+	//sound-dai = <&pcm5102a>;
 	status = "okay";
 };
 

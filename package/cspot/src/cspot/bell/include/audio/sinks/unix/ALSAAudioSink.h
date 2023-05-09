@@ -10,6 +10,9 @@
 #include <memory>
 #include <mutex>
 
+/** for accessing mixer */
+#include <alsa/mixer.h>
+
 #define PCM_DEVICE "default"
 
 template <typename T, int SIZE>
@@ -112,7 +115,7 @@ public:
     ~ALSAAudioSink();
     void feedPCMFrames(const uint8_t *buffer, size_t bytes);
     void runTask();
-
+    int MixerInit(void);
 private:
     RingbufferPointer<std::vector<uint8_t>, 3> ringbuffer;
     unsigned int pcm;
@@ -121,4 +124,12 @@ private:
     snd_pcm_uframes_t frames;
     int buff_size;
     std::vector<uint8_t> buff;
+
+    /** add for volume control */
+    snd_mixer_t *mixer;
+    snd_mixer_selem_id_t *ident;
+    snd_mixer_elem_t *elem;
+
+    long old_volume, volume;
+    long min, max;
 };

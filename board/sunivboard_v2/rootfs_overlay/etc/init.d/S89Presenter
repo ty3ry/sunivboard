@@ -1,5 +1,0 @@
-#!/bin/sh
-
-
-echo "Start presenter.."
-#presenter &

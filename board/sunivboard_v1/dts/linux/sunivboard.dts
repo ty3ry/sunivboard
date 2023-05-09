@@ -37,17 +37,17 @@
 
 		heartbeat {
 			label = "Heartbeat";
-			gpios = <&pio 4 10 GPIO_ACTIVE_HIGH>;	// PE10
+			gpios = <&pio 4 10 GPIO_ACTIVE_LOW>;	// PE10
 			default-state = "on";
 			linux,default-trigger = "heartbeat";
 		};
 
-		// activity {
-		// 	label = "Activity";
-		// 	gpios = <&pio 4 6 GPIO_ACTIVE_LOW>;	// PE6
-		// 	default-state = "on";
-		// 	linux,default-trigger = "activity";
-		// };
+		activity {
+			label = "activity";
+			gpios = <&pio 4 6 GPIO_ACTIVE_LOW>;	// PE6
+			default-state = "on";
+			linux,default-trigger = "activity";
+		};
 	};
 
 	pcm5102a: pcm5102a {
