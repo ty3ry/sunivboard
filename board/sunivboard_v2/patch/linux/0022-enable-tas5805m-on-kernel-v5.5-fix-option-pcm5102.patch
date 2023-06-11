@@ -1,25 +1,26 @@
---- a/sound/soc/codecs/Kconfig	2023-05-09 15:12:34.554779101 +0700
-+++ b/sound/soc/codecs/Kconfig	2023-05-09 15:05:10.783686370 +0700
-@@ -186,6 +186,7 @@
- 	select SND_SOC_TAS5086 if I2C
+diff -Naur original/Kconfig changes/Kconfig
+--- a/sound/soc/codecs/Kconfig	2023-06-11 12:56:14.089326295 +0700
++++ b/sound/soc/codecs/Kconfig	2023-06-11 12:54:41.778784668 +0700
+@@ -187,6 +187,7 @@
  	select SND_SOC_TAS571X if I2C
  	select SND_SOC_TAS5720 if I2C
-+	select SND_SOC_TAS5805M if I2C
  	select SND_SOC_TAS6424 if I2C
++	select SND_SOC_TAS5805M if I2C
  	select SND_SOC_TDA7419 if I2C
  	select SND_SOC_TFA9879 if I2C
+ 	select SND_SOC_TLV320AIC23_I2C if I2C
 @@ -914,7 +915,7 @@
  	select REGMAP_SPI
  
  config SND_SOC_PCM5102A
 -	tristate
-+	tristate "Texas Instruments PCM5102 CODEC - I2S"
++	tristate "Texas Instruments PCM5102A CODEC - I2S"
  
  config SND_SOC_PCM512x
  	tristate
-@@ -1164,6 +1165,14 @@
- 	  Enable support for Texas Instruments TAS5720L/M high-efficiency mono
- 	  Class-D audio power amplifiers.
+@@ -1171,6 +1172,15 @@
+ 	  Enable support for Texas Instruments TAS6424 high-efficiency
+ 	  digital input quad-channel Class-D audio power amplifiers.
  
 +config SND_SOC_TAS5805M
 +	tristate "Texas Instruments TAS5805M speaker amplifier"
@@ -29,40 +30,32 @@
 +	  amplifiers. This is a speaker amplifier with an integrated
 +	  DSP. DSP configuration for each instance needs to be supplied
 +
- config SND_SOC_TAS6424
- 	tristate "Texas Instruments TAS6424 Quad-Channel Audio amplifier"
++
+ config SND_SOC_TDA7419
+ 	tristate "ST TDA7419 audio processor"
  	depends on I2C
-@@ -1531,4 +1540,3 @@
- 	depends on I2C
- 
- endmenu
--
-
-
-
---- a/sound/soc/codecs/Makefile	2023-05-09 15:11:57.898503410 +0700
-+++ b/sound/soc/codecs/Makefile	2023-05-09 15:05:21.247751342 +0700
-@@ -197,6 +197,7 @@
- snd-soc-tas5086-objs := tas5086.o
+diff -Naur original/Makefile changes/Makefile
+--- a/sound/soc/codecs/Makefile	2023-06-11 12:56:18.257266103 +0700
++++ b/sound/soc/codecs/Makefile	2023-06-11 12:53:36.507976623 +0700
+@@ -198,6 +198,7 @@
  snd-soc-tas571x-objs := tas571x.o
  snd-soc-tas5720-objs := tas5720.o
-+snd-soc-tas5805m-objs := tas5805m.o
  snd-soc-tas6424-objs := tas6424.o
++snd-soc-tas5805m-objs := tas5805m.o
  snd-soc-tda7419-objs := tda7419.o
  snd-soc-tas2770-objs := tas2770.o
-@@ -486,6 +487,7 @@
- obj-$(CONFIG_SND_SOC_TAS5086)	+= snd-soc-tas5086.o
+ snd-soc-tfa9879-objs := tfa9879.o
+@@ -487,6 +488,7 @@
  obj-$(CONFIG_SND_SOC_TAS571X)	+= snd-soc-tas571x.o
  obj-$(CONFIG_SND_SOC_TAS5720)	+= snd-soc-tas5720.o
-+obj-$(CONFIG_SND_SOC_TAS5805M)	+= snd-soc-tas5805m.o
  obj-$(CONFIG_SND_SOC_TAS6424)	+= snd-soc-tas6424.o
++obj-$(CONFIG_SND_SOC_TAS5805M)	+= snd-soc-tas5805m.o
  obj-$(CONFIG_SND_SOC_TDA7419)	+= snd-soc-tda7419.o
  obj-$(CONFIG_SND_SOC_TAS2770) += snd-soc-tas2770.o
-
-
-
---- a/sound/soc/codecs/tas5805m.c	2023-05-09 16:39:52.624416667 +0700
-+++ b/sound/soc/codecs/tas5805m.c	2023-05-09 15:04:27.027420307 +0700
+ obj-$(CONFIG_SND_SOC_TFA9879)	+= snd-soc-tfa9879.o
+diff -Naur original/tas5805m.c changes/tas5805m.c
+--- /dev/null	1970-01-01 07:00:00.000000000 +0700
++++ b/sound/soc/codecs/tas5805m.c	2023-06-11 12:51:58.882052930 +0700
 @@ -0,0 +1,1267 @@
 +// SPDX-License-Identifier: GPL-2.0
 +//
@@ -1331,4 +1324,3 @@
 +MODULE_AUTHOR("Daniel Beer <daniel.beer@igorinstitute.com>");
 +MODULE_DESCRIPTION("TAS5805M Audio Amplifier Driver");
 +MODULE_LICENSE("GPL v2");
-\ No newline at end of file
