@@ -82,7 +82,7 @@
 	};
 
 	wifi_reg_pin: wifi-reg-pin {
-		pins = "PA2";
+		pins = "PA7";
 		function = "gpio_out";
 	};
 
@@ -96,7 +96,7 @@
 		regulator-max-microvolt = <3300000>;
 		regulator-name = "vcc-wifi";
 		enable-active-high;
-		gpio = <&pio 0 2 GPIO_ACTIVE_HIGH>;
+		gpio = <&pio 0 7 GPIO_ACTIVE_HIGH>;
 	};
 
 	reg_vdd_cpux: vdd-cpux-regulator {
@@ -224,6 +224,25 @@
 		reg = <0>;
 		spi-max-frequency = <40000000>;
 	};
+};
+
+&spi1 {
+    pinctrl-names = "default";
+    status = "okay";
+
+    device@0 {
+        rotate = <90>;
+        bgr = <0>;
+        fps = <30>;
+        compatible = "ilitek,ili9486";
+        spi-max-frequency = <15000000>;
+        reg = <0>;
+        regwidth = <16>;
+        buswidth = <8>;
+        verbose = <3>;
+        reset-gpios = <&pio 0 2 GPIO_ACTIVE_HIGH>; /* PA2 */
+        dc-gpios = <&pio 0 3 GPIO_ACTIVE_HIGH>; /* PA3 */
+    };
 };
 
 &uart0 {

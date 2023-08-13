@@ -4,6 +4,8 @@
 
 echo "Start CSpot (Spotify Connect)"
 
+exit 
+
 APPNAME=cspotcli
 SPOTIFY_ADDR=apresolve.spotify.com
 
