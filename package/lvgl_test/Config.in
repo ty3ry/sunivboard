@@ -1,0 +1,7 @@
+config BR2_PACKAGE_LVGL_TEST
+	bool "LVGL test"
+
+	help
+	  packge to use and test lvgl display framework
+
+comment "Buildroot test package for LVGL"

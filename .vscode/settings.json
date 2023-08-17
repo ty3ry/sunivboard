@@ -25,6 +25,10 @@
         "platform_device.h": "c",
         "unordered_map": "c",
         "memory": "c",
-        "module.h": "c"
+        "module.h": "c",
+        "lvgl.h": "c",
+        "fbdev.h": "c",
+        "lv_demos.h": "c",
+        "lv_demo_music.h": "c"
     }
 }
